@@ -8,5 +8,10 @@ router = APIRouter(tags=["Authentication"])
 
 @router.post("/register", description="Create a new user")
 async def register(user: user_schema.UserCreate, session: Session = Depends(get_db)):
-    new_user = user_service.create_user(db=session, user=user)
-    return new_user
+    try:
+        new_user = user_service.create_user(db=session, user=user)
+        if new_user is None:
+            raise HTTPException(status_code=400, detail="User creation failed.")
+        return new_user
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
