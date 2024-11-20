@@ -8,3 +8,5 @@ venv/
 *.log
 .venv/
 .sqlite
+.db
+.sql
