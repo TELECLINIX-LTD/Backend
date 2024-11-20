@@ -2,7 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database.database import engine, Base
 
-from routers import auth_router, login_router
+from routers import authentication, doctors_auth
+
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 version = "v1"
 
@@ -10,9 +19,6 @@ app = FastAPI(
     title="TeleClinix Backend APIs",
     description="APIs for managing TeleClinix patient and doctor data",
     version=version,
-    openapi_url=f"/api/{version}/openapi.json",
-    docs_url=f"/api/{version}/docs",
-    redoc_url=f"/api/{version}/redoc"
 )
 
 origins = [
@@ -28,13 +34,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database created successfully")
+except Exception as e:
+    logger.error(f"Failed to create database: {e}")
 
 
-app.include_router(auth_router.router)
+app.include_router(router = authentication.auth_router, tags=["Authentication"])
+app.include_router(router = doctors_auth.doc_router, tags=["Doctors"])
 
-app.include_router(login_router.router)
+
 
 @app.get("/", tags=["Home"])
 async def root():
-    return {"message": "Welcome to TeleClinix API Documentation, Navigate to /api/v1/docs to view documentation."}
+    return {"message": "Welcome to TeleClinix API Documentation, Navigate to /docs to view documentation."}

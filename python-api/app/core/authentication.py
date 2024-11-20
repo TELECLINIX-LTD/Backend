@@ -7,13 +7,13 @@ from typing import Annotated
 
 from sqlalchemy.orm import Session
 from database.database import get_db
-from services import user_service
+import services.auth_service as auth_service
 from core.security import verify_password
 
-from fastapi.security import OAuth2
-from fastapi.openapi.models import OAuthFlows, OAuthFlowPassword
-from fastapi import Request
-from fastapi.security.utils import get_authorization_scheme_param
+from fastapi.security import OAuth2PasswordBearer
+# from fastapi.openapi.models import OAuthFlows, OAuthFlowPassword
+# from fastapi import Request
+# from fastapi.security.utils import get_authorization_scheme_param
 
 import os
 from dotenv import load_dotenv
@@ -23,49 +23,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-class OAuth2PasswordBearerWithEmail(OAuth2):
-    def __init__(
-            self, 
-            tokenUrl: str, 
-            scheme_name: str | None = None, 
-            auto_error: bool = True
-    ):
-        flows = OAuthFlows(password=OAuthFlowPassword(tokenUrl=tokenUrl))
-        super().__init__(flows=flows, scheme_name=scheme_name, auto_error=auto_error)
 
-    async def __call__(self, request: Request) -> str | None:
-        authorization: str = request.headers.get("Authorization")
-        scheme, param = get_authorization_scheme_param(authorization)
-        if not authorization or scheme.lower() != "bearer":
-            if self.auto_error:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Not authenticated",
-                    headers={"WWW-Authenticate": "Bearer"},
-                    
-                )
-            else:
-                return None
-        return param
-    
-oauth2_scheme = OAuth2PasswordBearerWithEmail(tokenUrl="login")
-
-class EmailPasswordRequestForm:
-    def __init__(
-        self,
-        grant_type: str = Form(default=None, regex="password"),
-        email: str = Form(),
-        password: str = Form(),
-        scope: str = Form(default=""),
-        client_id: str | None = Form(default=None),
-        client_secret: str | None = Form(default=None),
-    ):
-        self.grant_type = grant_type
-        self.email = email
-        self.password = password
-        self.scopes = scope.split()
-        self.client_id = client_id
-        self.client_secret = client_secret
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 class Token(BaseModel):
     access_token: str
@@ -75,8 +34,8 @@ class TokenData(BaseModel):
     email: Optional[str] = None
 
 
-def authenticate_user(session: Session, email: str, password: str):
-    user = user_service.get_user_by_email(session, email)
+def authenticate_user(session: Session, username: str, password: str):
+    user = auth_service.get_user_by_username(session, username)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -102,7 +61,7 @@ def decode_access_token(token: str):
         return None
 
 
-def get_current_active_user(token: Annotated[str, Depends(oauth2_scheme)], session=Depends(get_db)):
+def get_current_active_user(token: str = Depends(oauth2_scheme), session=Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -110,13 +69,13 @@ def get_current_active_user(token: Annotated[str, Depends(oauth2_scheme)], sessi
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
+        username: str = payload.get("sub")
+        if not username:
             raise credentials_exception
-        token_data = TokenData(email=email)
+        # token_data = TokenData(email=email)
     except JWTError:
         raise credentials_exception
-    user = user_service.get_user_by_email(session, email=token_data.email)
+    user = auth_service.get_user_by_username(session, username=username)
     if user is None:
         raise credentials_exception
     return user

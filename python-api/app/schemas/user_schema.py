@@ -90,10 +90,18 @@
 
 from pydantic import BaseModel, ConfigDict
 
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
+    username: str
+
+class UserCreate(UserBase):
     email: str
     password: str
-    role: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class User(UserBase):
+    id: int
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -103,5 +111,4 @@ class Token(BaseModel):
 
 class TokenPayload(BaseModel):
     email: int
-    role: str
 

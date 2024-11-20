@@ -1,3 +1,11 @@
+# from sqlalchemy import Column, Integer, String
+# from sqlalchemy.orm import declarative_base
+# from database.database import Base
+
+# Base = declarative_base()
+
+
+
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Enum, ForeignKey
 from database.database import Base
 from sqlalchemy.orm import relationship
@@ -12,12 +20,12 @@ class UserRole(enum.Enum):
 
 
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String, index=True)
-    role = Column(Enum(UserRole), nullable=False)
+    username = Column(String(255))
+    email = Column(String(255), unique=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
 
 
     doctor_profile = relationship("Doctor", back_populates="user", uselist=False)
@@ -41,6 +49,11 @@ class Doctor(Base):
     __tablename__ = 'doctors'
     
     id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+    fullname = Column(String(255), nullable=False)
+    email = Column(String(255), nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    phone_number = Column(String(255), nullable=False)
+    medical_license_number = Column(String(255), nullable=False)
     specialization = Column(String, nullable=False)
     experience_years = Column(Integer)
     
