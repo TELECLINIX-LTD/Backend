@@ -39,22 +39,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-# @auth_router.get("/users", response_model=List[User])
-# def get_authenticated_users(
-#     current_user: User = Depends(get_current_active_user),  # Ensure only authenticated users can access this
-#     db: Session = Depends(get_db),
-# ):
-#     """
-#     Retrieve all users. Only accessible to authenticated users.
-#     """
-#     if not current_user:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Unauthorized access",
-#             headers={"WWW-Authenticate": "Bearer"},
-#         )
-#     return get_all_users(db)
-
 @auth_router.get("/users", response_model=List[User])
 def get_authenticated_users(
     current_user: User = Depends(get_current_active_user),  # Ensure only authenticated users can access this

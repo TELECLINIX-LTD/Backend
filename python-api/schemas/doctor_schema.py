@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 
 
@@ -29,5 +29,4 @@ class Doctor(DoctorBase):
     user_id: int = Field(..., description="Associated user ID")
     consultations: List = Field(default=[], description="List of consultations handled by the doctor")
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
