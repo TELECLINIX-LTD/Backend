@@ -13,17 +13,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-version = "v1"
+version = "1.0.0"
 
 app = FastAPI(
     title="TeleClinix Backend APIs",
     description="APIs for managing TeleClinix patient and doctor data",
     version=version,
+    contact={
+        "name": "TeleClinix Development Team",
+        "email": "teleclinix0@gmail.com"
+    }
 )
 
 origins = [
     "http://localhost",
     "http://localhost:8080",
+    "https://teleclinix-backend-api.onrender.com"
 ]
 
 app.add_middleware(
