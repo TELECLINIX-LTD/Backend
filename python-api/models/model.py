@@ -23,9 +23,10 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(255))
     email = Column(String(255), unique=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
+    password = Column(String(255), nullable=False)
+    is_active = Column(Boolean, default=True)
+    is_logged_in = Column(Boolean, default=False)
 
 
     doctor_profile = relationship("Doctor", back_populates="user", uselist=False)

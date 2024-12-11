@@ -14,15 +14,14 @@ def get_user(db: Session, user_id: int):
 def get_user_by_email(db: Session, email: str):
     return db.query(model.User).filter(model.User.email == email).first()
 
-def get_user_by_username(db: Session, username: str):
-    return db.query(model.User).filter(model.User.username == username).first()
+# def get_user_by_username(db: Session, username: str):
+#     return db.query(model.User).filter(model.User.username == username).first()
 
-def create_user(db: Session, user: schemas.user_schema.UserCreate, hashed_password: str):
+def create_user(db: Session, user: schemas.user_schema.UserCreate, password: str):
     
     db_user = model.User(
-        username=user.username,
         email=user.email,
-        hashed_password=hashed_password
+        password=password
     )
     db.add(db_user)
     db.commit()

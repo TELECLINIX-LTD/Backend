@@ -10,3 +10,4 @@ venv/
 .sqlite
 .db
 .sql
+teleclinix-database.sqlite
