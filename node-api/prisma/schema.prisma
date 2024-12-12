@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -23,25 +23,9 @@ enum AuthType {
 enum Role {
   ADMIN
   PATIENT
-  PROVIDER
+  DOCTOR  
 }
 
-model Patient {
-  id                   String          @id @default(cuid())
-  firstName            String
-  lastName             String
-  dateOfBirth          DateTime
-  gender               String
-  address              String
-  contactNumber        String
-  emergencyContact     String
-  insuranceInformation String?
-  healthcareProviders  Provider[]      @relation("PatientProviders")
-  appointments         Appointment[]
-  medicalRecords       MedicalRecord[]
-  labTests             LabTest[]
-  notifications        Notification[]
-}
 
 model User {
   id               String    @id @default(cuid())
@@ -50,45 +34,74 @@ model User {
   firstName        String?
   lastName         String?
   Image            String?
-  password         String?
+  password         String
   role             Role      @default(PATIENT)
   messagesSent     Message[] @relation("MessagesSent")
   messagesReceived Message[] @relation("MessagesReceived")
 
   authType AuthType @default(LOCAL)
 
-  socialProviderId String?
+  socialDoctorId String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  @@unique([authType, socialProviderId])
+  
+  // Relationships to Doctor and Patient
+  doctor        Doctor?   
+  patient       Patient?  
+
+  @@unique([authType, socialDoctorId])
 }
 
-model Provider {
+model Patient {
+  id                   String          @id @default(cuid())
+  userId               String @unique
+  dateOfBirth          DateTime
+  gender               String
+  address              String
+  contactNumber        String
+  emergencyContact     String
+  insuranceInformation String?
+  healthcareProviders  Doctor[]      @relation("PatientDoctor")
+  appointments         Appointment[]
+  medicalRecords       MedicalRecord[]
+  labTests             LabTest[]
+  notifications        Notification[]
+
+  @@index([userId])
+
+  // Foreign key reference to User model
+  user                 User            @relation(fields: [userId], references: [id])
+}
+model Doctor {
   id                 String         @id @default(cuid())
-  firstName          String
-  lastName           String
+  userId             String @unique
   specialization     String
   affiliation        String
   contactInformation String
   appointments       Appointment[]
-  patients           Patient[]      @relation("PatientProviders")
+  patients           Patient[]      @relation("PatientDoctor")
   notifications      Notification[]
+
+  @@index([userId])
+
+  // Foreign key reference to User model
+  user               User            @relation(fields: [userId], references: [id])
 }
 
 model Appointment {
   id              String   @id @default(cuid())
   patientId       String
-  providerId      String
+  doctorId      String
   appointmentDate DateTime
   appointmentTime DateTime
   reasonForVisit  String
   status          String   @default("Scheduled")
 
   patient  Patient  @relation(fields: [patientId], references: [id])
-  provider Provider @relation(fields: [providerId], references: [id])
+  doctor Doctor @relation(fields: [doctorId], references: [id])
 }
 
 model MedicalRecord {
@@ -102,6 +115,8 @@ model MedicalRecord {
   vitalSigns            String
 
   patient Patient @relation(fields: [patientId], references: [id])
+
+  @@index([visitDate, patientId])
 }
 
 model LabTest {
@@ -124,16 +139,18 @@ model Message {
 
   sender    User @relation("MessagesSent", fields: [senderId], references: [id])
   recipient User @relation("MessagesReceived", fields: [recipientId], references: [id])
+
 }
 
 model Notification {
   id         String   @id @default(cuid())
   patientId  String
-  providerId String
+  doctorId   String
   type       String
   content    String
   sentDate   DateTime
 
   patient  Patient  @relation(fields: [patientId], references: [id])
-  provider Provider @relation(fields: [providerId], references: [id])
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+
 }
