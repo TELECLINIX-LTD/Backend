@@ -1,50 +1,46 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 import schemas.user_schema
 from services import auth_service
 from database.database import get_db
-from core.authentication import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_current_active_user, Token, EmailPasswordRequestForm, authenticate_user
-from core.security import pwd_context
+from core.authentication import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_current_active_user
+from core.security import get_password_hash
 from datetime import timedelta
 from models import model
-from typing import Annotated
 
-from schemas.user_schema import User
+from models.model import User
 
 auth_router = APIRouter(
-    prefix="/api"
+    prefix="/api",
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "Not found"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Not authenticated"},
+        status.HTTP_403_FORBIDDEN: {"description": "Forbidden"},
+        status.HTTP_400_BAD_REQUEST: {"description": "Bad request"},
+    }
 )
 
 @auth_router.post("/register/", status_code=status.HTTP_201_CREATED, description="Create new user")
 
 async def signup(user: schemas.user_schema.UserCreate, db: Session = Depends(get_db)):
     db_user = auth_service.get_user_by_email(db, email=user.email)
-    password = pwd_context.hash(user.password)
     if db_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
     
-    return auth_service.create_user(db=db, user=user, password=password)
+    hashed_password = get_password_hash(user.password)
+    return auth_service.create_user(db=db, user=user, password=hashed_password)
 
-@auth_router.post("/login/", response_model=Token, description="Authenticate user with email and password. Returns an access token upon successful login.")
-async def login(form_data: Annotated[EmailPasswordRequestForm, Depends()], db: Session = Depends(get_db)):
-    user = authenticate_user(db, form_data.email, form_data.password)
-    if not user:
+@auth_router.post("/login/", description="Authenticate user with email and password. Returns an access token upon successful login.")
+async def login(form_data: OAuth2PasswordRequestForm = Depends(),  db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == form_data.username).first()
+    if not user or not user.verify_password(form_data.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
             )
     
-    # Verify that the user exists
-    user = auth_service.get_user_by_email(db, email=user.email)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    
-    # # Verify that the password is correct
-    # if not pwd_context.verify(user.password, user.password):
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
-    
-    #Mark user as authenticated or logged in
     user.is_logged_in = True
     db.commit()
     db.refresh(user)

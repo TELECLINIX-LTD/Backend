@@ -8,6 +8,7 @@
 
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Enum, ForeignKey
 from database.database import Base
+from core.security import get_password_hash, verify_password
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -27,6 +28,12 @@ class User(Base):
     password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
     is_logged_in = Column(Boolean, default=False)
+
+    def set_password(self, password: str):
+        self.password = get_password_hash(password)
+
+    def verify_password(self, password: str) -> bool:
+        return verify_password(password, self.password)
 
 
     doctor_profile = relationship("Doctor", back_populates="user", uselist=False)
