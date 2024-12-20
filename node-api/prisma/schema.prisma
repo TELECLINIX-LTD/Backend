@@ -26,14 +26,23 @@ enum Role {
   DOCTOR  
 }
 
+enum Specialization {
+  CARDIOLOGIST
+  NEUROLOGIST
+  PEDIATRICIAN
+  SURGEON
+}
+
 
 model User {
   id               String    @id @default(cuid())
   email            String    @unique
   emailVerified    DateTime?
-  firstName        String?
-  lastName         String?
+  emailToken       String?
+  fullName         String?
+  gender           String?
   Image            String?
+  address          String?
   password         String
   role             Role      @default(PATIENT)
   messagesSent     Message[] @relation("MessagesSent")
@@ -48,7 +57,7 @@ model User {
   deletedAt DateTime?
 
   
-  // Relationships to Doctor and Patient
+  // Relationships to Doctor and Patientaut
   doctor        Doctor?   
   patient       Patient?  
 
@@ -58,11 +67,8 @@ model User {
 model Patient {
   id                   String          @id @default(cuid())
   userId               String @unique
-  dateOfBirth          DateTime
-  gender               String
-  address              String
-  contactNumber        String
-  emergencyContact     String
+  dateOfBirth          DateTime?
+  emergencyContact     String?
   insuranceInformation String?
   healthcareProviders  Doctor[]      @relation("PatientDoctor")
   appointments         Appointment[]
@@ -79,8 +85,9 @@ model Doctor {
   id                 String         @id @default(cuid())
   userId             String @unique
   specialization     String
-  affiliation        String
-  contactInformation String
+  licenseNumber      String
+  yearsOfExperience  Int
+  avalibility        Json?
   appointments       Appointment[]
   patients           Patient[]      @relation("PatientDoctor")
   notifications      Notification[]

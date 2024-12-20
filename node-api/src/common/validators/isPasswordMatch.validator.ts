@@ -1,14 +1,19 @@
-import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
+import {
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  ValidationArguments,
+} from 'class-validator';
 
 @ValidatorConstraint({ async: false })
 export class IsPasswordMatch implements ValidatorConstraintInterface {
   validate(value: any, args: ValidationArguments) {
     const [passwordField] = args.constraints;
     const object = args.object as any;
-    return value === object[passwordField];  // Compare confirmPassword with password field
+    return value === object[passwordField];
   }
 
   defaultMessage(args: ValidationArguments): string {
-    return 'Password and Confirm Password do not match';
+    const field = args.property; // Example usage
+    return `${field} and password do not match`;
   }
 }

@@ -13,6 +13,6 @@ export class RegisterDto {
 
   @MinLength(8)
   @ApiProperty()
-  @Validate(IsPasswordMatch, ['password']) 
+  @Validate(IsPasswordMatch, ['password'])
   confirm_password: string;
 }
