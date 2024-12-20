@@ -1,0 +1,163 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthType {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+  APPLE
+}
+
+enum Role {
+  ADMIN
+  PATIENT
+  DOCTOR  
+}
+
+enum Specialization {
+  CARDIOLOGIST
+  NEUROLOGIST
+  PEDIATRICIAN
+  SURGEON
+}
+
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  emailVerified    DateTime?
+  emailToken       String?
+  fullName         String?
+  gender           String?
+  Image            String?
+  address          String?
+  password         String
+  role             Role      @default(PATIENT)
+  messagesSent     Message[] @relation("MessagesSent")
+  messagesReceived Message[] @relation("MessagesReceived")
+
+  authType AuthType @default(LOCAL)
+
+  socialDoctorId String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  
+  // Relationships to Doctor and Patientaut
+  doctor        Doctor?   
+  patient       Patient?  
+
+  @@unique([authType, socialDoctorId])
+}
+
+model Patient {
+  id                   String          @id @default(cuid())
+  userId               String @unique
+  dateOfBirth          DateTime?
+  emergencyContact     String?
+  insuranceInformation String?
+  healthcareProviders  Doctor[]      @relation("PatientDoctor")
+  appointments         Appointment[]
+  medicalRecords       MedicalRecord[]
+  labTests             LabTest[]
+  notifications        Notification[]
+
+  @@index([userId])
+
+  // Foreign key reference to User model
+  user                 User            @relation(fields: [userId], references: [id])
+}
+model Doctor {
+  id                 String         @id @default(cuid())
+  userId             String @unique
+  specialization     String
+  licenseNumber      String
+  yearsOfExperience  Int
+  avalibility        Json?
+  appointments       Appointment[]
+  patients           Patient[]      @relation("PatientDoctor")
+  notifications      Notification[]
+
+  @@index([userId])
+
+  // Foreign key reference to User model
+  user               User            @relation(fields: [userId], references: [id])
+}
+
+model Appointment {
+  id              String   @id @default(cuid())
+  patientId       String
+  doctorId      String
+  appointmentDate DateTime
+  appointmentTime DateTime
+  reasonForVisit  String
+  status          String   @default("Scheduled")
+
+  patient  Patient  @relation(fields: [patientId], references: [id])
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+}
+
+model MedicalRecord {
+  id                    String   @id @default(cuid())
+  patientId             String
+  visitDate             DateTime
+  diagnosis             String
+  symptoms              String
+  medicationsPrescribed String?
+  testResults           String?
+  vitalSigns            String
+
+  patient Patient @relation(fields: [patientId], references: [id])
+
+  @@index([visitDate, patientId])
+}
+
+model LabTest {
+  id                       String   @id @default(cuid())
+  patientId                String
+  testName                 String
+  testDate                 DateTime
+  results                  String
+  additionalConsiderations String?
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  senderId    String
+  recipientId String
+  content     String
+  timestamp   DateTime
+
+  sender    User @relation("MessagesSent", fields: [senderId], references: [id])
+  recipient User @relation("MessagesReceived", fields: [recipientId], references: [id])
+
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  patientId  String
+  doctorId   String
+  type       String
+  content    String
+  sentDate   DateTime
+
+  patient  Patient  @relation(fields: [patientId], references: [id])
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+
+}

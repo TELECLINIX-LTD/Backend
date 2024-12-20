@@ -1,0 +1,15 @@
+services:
+  mysql:
+    image: postgres:14.0
+    container_name: teleclinix_db
+    env_file:
+      - .env
+    ports:
+      - '5433:5432'
+    volumes:
+      - mysql-data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+    driver: local
