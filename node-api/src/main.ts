@@ -1,11 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
+
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: '*',
     credentials: true,
     methods: '*',
     allowedHeaders: '*',
@@ -18,6 +21,17 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  await app.listen(8000);
+
+  //swagger configurations
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Teleclinix API')
+    .setDescription('Teleclinix API')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api', app, document);
+
+  const port = app.get<ConfigService>(ConfigService).get<number>('PORT');
+  await app.listen(port);
 }
 bootstrap();
