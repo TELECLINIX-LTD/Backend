@@ -9,6 +9,9 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggerModule } from './common/logger/logger.module';
 import { EmailModule } from './email/email.module';
 import { AppController } from './app.controller';
+import { DoctorModule } from './doctor/doctor.module';
+import { PatientModule } from './patient/patient.module';
+import { AppointmentModule } from './appointment/appointment.module';
 
 @Module({
   imports: [
@@ -18,6 +21,9 @@ import { AppController } from './app.controller';
     UsersModule,
     LoggerModule,
     EmailModule,
+    DoctorModule,
+    PatientModule,
+    AppointmentModule,
   ],
   controllers: [AppController],
   providers: [
