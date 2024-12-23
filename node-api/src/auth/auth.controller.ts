@@ -1,12 +1,17 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { doctorRegistrationDto, userRegisterDto } from './dtos/auth.dto';
+import {
+  doctorRegistrationDto,
+  userRegisterDto,
+  VerifyTokenDto,
+} from './dtos/auth.dto';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
   @ApiResponse({
@@ -30,6 +35,11 @@ export class AuthController {
   })
   async signup(@Body() AuthDto: userRegisterDto) {
     return await this.authService.signup(AuthDto);
+  }
+
+  @Post('verify-token')
+  async verifyToken(@Body() verifyTokenDto: VerifyTokenDto): Promise<any> {
+    return this.authService.verifyToken(verifyTokenDto.token);
   }
 
   @Post('doctor/register')

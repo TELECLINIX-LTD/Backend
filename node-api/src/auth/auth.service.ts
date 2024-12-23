@@ -4,6 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { doctorRegistrationDto, userRegisterDto } from './dtos/auth.dto';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -11,10 +12,14 @@ export class AuthService {
     private readonly db: PrismaService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   async signup(AuthDto: userRegisterDto) {
     const { password, email } = AuthDto;
+
+    const emailToken = Math.floor(100000 + Math.random() * 900000).toString();
+
     const existingUser = await this.db.user.findUnique({
       where: { email: AuthDto.email },
     });
@@ -28,9 +33,28 @@ export class AuthService {
       data: {
         email: email,
         password: hashedPassword,
+        emailToken,
       },
     });
+    await this.emailService.sendEmailVerification(user.email, emailToken);
     return user;
+  }
+
+  async verifyToken(token: string) {
+    const user = await this.db.user.findFirst({
+      where: { emailToken: token },
+    });
+
+    if (!user) {
+      throw new Error('Invalid token');
+    }
+
+    await this.db.user.update({
+      where: { id: user.id },
+      data: { emailToken: null, isEmailVerified: true },
+    });
+
+    return { message: 'Your email has been verified. You can now log in.' };
   }
 
   async registerDoctor(doctorDto: doctorRegistrationDto) {

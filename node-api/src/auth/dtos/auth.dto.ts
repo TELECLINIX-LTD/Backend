@@ -79,3 +79,9 @@ export class doctorRegistrationDto {
   @Validate(IsPasswordMatch, ['password'])
   confirm_password: string;
 }
+
+export class VerifyTokenDto {
+  @ApiProperty()
+  @IsString()
+  token: string;
+}

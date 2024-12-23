@@ -37,7 +37,7 @@ enum Specialization {
 model User {
   id               String    @id @default(cuid())
   email            String    @unique
-  emailVerified    DateTime?
+  isEmailVerified   Boolean?
   emailToken       String?
   fullName         String?
   gender           String?

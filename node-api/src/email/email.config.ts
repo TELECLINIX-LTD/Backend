@@ -16,8 +16,8 @@ export class EmailConfig {
   getEmailCredentials() {
     return {
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
+      port: 465,
+      secure: true,
       auth: {
         user: this.user,
         pass: this.password,
