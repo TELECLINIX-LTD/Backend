@@ -23,6 +23,7 @@
     "db:migrate:reset": "prisma migrate reset"
   },
   "dependencies": {
+    "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
@@ -32,6 +33,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^8.1.0",
+    "@nestjs/throttler": "^6.3.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",

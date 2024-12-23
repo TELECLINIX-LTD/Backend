@@ -6,6 +6,7 @@ import {
   userRegisterDto,
   VerifyTokenDto,
 } from './dtos/auth.dto';
+import { LoginInputDto } from './dtos/login-input.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -89,5 +90,29 @@ export class AuthController {
   })
   async registerDoctor(@Body() doctorDto: doctorRegistrationDto) {
     return await this.authService.registerDoctor(doctorDto);
+  }
+
+  @Post('login')
+  @ApiOperation({ summary: 'Login a user' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully logged in',
+  })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiBody({
+    description: 'Details required to login a user',
+    type: userRegisterDto,
+    examples: {
+      example1: {
+        summary: 'Valid User Login Data',
+        value: {
+          email: 'jose@gmail.com',
+          password: 'securePassword123',
+        },
+      },
+    },
+  })
+  async login(@Body() loginDto: LoginInputDto) {
+    return await this.authService.login(loginDto);
   }
 }

@@ -1,0 +1,17 @@
+export const SystemMessages = {
+  SUCCESS: 'Operation successful',
+  FAILURE: 'Operation failed',
+  UNAUTHORIZED: 'Unauthorized access',
+  FORBIDDEN: 'You do not have permission to perform this action',
+  NOT_FOUND: 'Resource not found',
+  INTERNAL_SERVER_ERROR: 'Internal server error',
+  BAD_REQUEST: 'Invalid request parameters',
+
+  AUTH_LOGIN_SUCCESS: 'Login successful',
+  AUTH_LOGOUT_SUCCESS: 'Logout successful',
+  AUTH_INVALID_CREDENTIALS: 'Invalid email or password',
+  AUTH_REGISTER_SUCCESS: 'Registration successful',
+  AUTH_PASSWORD_MISMATCH: 'Passwords do not match',
+  AUTH_TOKEN_MISSING: 'Authentication token is missing',
+  AUTH_TOKEN_INVALID: 'Invalid or expired authentication token',
+};

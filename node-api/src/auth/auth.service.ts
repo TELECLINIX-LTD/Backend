@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { doctorRegistrationDto, userRegisterDto } from './dtos/auth.dto';
 import { EmailService } from 'src/email/email.service';
+import { LoginInputDto } from './dtos/login-input.dto';
+import { SystemMessages } from 'src/common/constants/system.messages';
 
 @Injectable()
 export class AuthService {
@@ -71,6 +73,7 @@ export class AuthService {
         email: email,
         password: password,
         fullName: fullName,
+        role: 'DOCTOR',
       },
     });
 
@@ -92,5 +95,25 @@ export class AuthService {
       },
     });
     return doctor;
+  }
+
+  async login(loginDto: LoginInputDto) {
+    const user = await this.db.user.findUnique({
+      where: { email: loginDto.email },
+    });
+
+    if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
+      throw new UnauthorizedException(SystemMessages.AUTH_INVALID_CREDENTIALS);
+    }
+
+    const token = this.jwtService.sign(
+      { id: user.id, role: user.role },
+      {
+        expiresIn: this.config.get('JWT_EXPIRES_IN'),
+        secret: this.config.get('JWT_SECRET_KEY'),
+      },
+    );
+
+    return { token, user };
   }
 }
