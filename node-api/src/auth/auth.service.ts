@@ -46,14 +46,14 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error('Invalid token');
+      throw new Error('Invalid or expired token');
     }
 
     await this.db.user.update({
       where: { id: user.id },
       data: { emailToken: null, isEmailVerified: true },
     });
-
+s
     return { message: 'Your email has been verified. You can now log in.' };
   }
 

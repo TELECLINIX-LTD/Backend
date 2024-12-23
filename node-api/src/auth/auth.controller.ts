@@ -38,6 +38,24 @@ export class AuthController {
   }
 
   @Post('verify-token')
+  @ApiOperation({ summary: 'Verify the email token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Your email has been verified. You can now log in.',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token.' })
+  @ApiBody({
+    description: 'Token required to verify email',
+    type: VerifyTokenDto,
+    examples: {
+      example1: {
+        summary: 'Valid Token',
+        value: {
+          token: '23458',
+        },
+      },
+    },
+  })
   async verifyToken(@Body() verifyTokenDto: VerifyTokenDto): Promise<any> {
     return this.authService.verifyToken(verifyTokenDto.token);
   }
