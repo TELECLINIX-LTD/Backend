@@ -53,7 +53,6 @@ export class AuthService {
       where: { id: user.id },
       data: { emailToken: null, isEmailVerified: true },
     });
-s
     return { message: 'Your email has been verified. You can now log in.' };
   }
 
