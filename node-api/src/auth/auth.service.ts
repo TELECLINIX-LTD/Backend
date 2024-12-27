@@ -102,7 +102,15 @@ export class AuthService {
       where: { email: loginDto.email },
     });
 
-    if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
+    if (!user) {
+      throw new UnauthorizedException('User does not exist');
+    }
+
+    const passwordMatch = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
+    if (!passwordMatch) {
       throw new UnauthorizedException(SystemMessages.AUTH_INVALID_CREDENTIALS);
     }
 
