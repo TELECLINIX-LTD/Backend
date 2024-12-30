@@ -21,6 +21,7 @@ export class DoctorService {
         },
         licenseNumber: true,
         specialization: true,
+        availability: true,
         yearsOfExperience: true,
       },
     });

@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  ArrayNotEmpty,
+  IsArray,
   IsEmail,
   IsInt,
   IsNotEmpty,
@@ -59,6 +61,16 @@ export class doctorRegistrationDto {
   @IsInt({ message: 'Years of experience must be an integer.' })
   @ApiProperty()
   yearsOfExperience: number;
+
+  @IsArray({ message: 'Availability must be an array of strings.' })
+  @ArrayNotEmpty({ message: 'Availability cannot be empty.' })
+  @IsString({ each: true, message: 'Each availability must be a string.' })
+  @ApiProperty({
+    description:
+      'The doctor’s availability times as an array of strings (ISO 8601 format)',
+    example: ['2024-12-30T09:00:00Z', '2024-12-30T14:00:00Z'],
+  })
+  availability: string[];
 
   @IsNotEmpty({ message: 'Password should not be empty.' })
   @MinLength(8, { message: 'Password should be at least 8 characters long.' })
