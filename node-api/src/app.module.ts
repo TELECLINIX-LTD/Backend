@@ -13,7 +13,7 @@ import { DoctorModule } from './doctor/doctor.module';
 import { PatientModule } from './patient/patient.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { RedisModule } from '@nestjs-modules/ioredis';
+// import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
@@ -23,10 +23,10 @@ import { RedisModule } from '@nestjs-modules/ioredis';
         limit: 10,
       },
     ]),
-    RedisModule.forRoot({
-      type: 'single',
-      url: process.env.REDIS_URL,
-    }),
+    // RedisModule.forRoot({
+    //   type: 'single',
+    //   url: process.env.REDIS_URL,
+    // }),
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuthModule,

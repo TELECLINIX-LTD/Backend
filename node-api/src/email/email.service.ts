@@ -9,14 +9,14 @@ export class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor(private readonly emailConfig: EmailConfig) {
-    this.initliazeTransporter();
+    this.initializeTransporter();
     this.verifyConnection();
   }
 
   /**
    * Initialize the SMTP transporter with the email credentials.
    */
-  private async initliazeTransporter() {
+  private async initializeTransporter() {
     const config = this.emailConfig.getEmailCredentials();
     this.logger.log(
       `Initialize email service config: Host=${config.host}, Port=${config.port}, Secure=${config.secure}`,

@@ -61,11 +61,6 @@ export class doctorRegistrationDto {
   @ApiProperty()
   yearsOfExperience: number;
 
-  @IsNotEmpty({ message: 'Availability date and time should not be empty.' })
-  @IsDateString({}, { message: 'Availability must be a valid date and time.' })
-  @ApiProperty()
-  availability: string;
-
   @IsNotEmpty({ message: 'Password should not be empty.' })
   @MinLength(8, { message: 'Password should be at least 8 characters long.' })
   @ApiProperty()

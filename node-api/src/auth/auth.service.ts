@@ -59,7 +59,20 @@ export class AuthService {
   }
 
   async registerDoctor(doctorDto: doctorRegistrationDto) {
-    const { email, password, fullName, ...doctorDetails } = doctorDto;
+    console.log(doctorDto);
+    const {
+      confirm_password,
+      email,
+      password,
+      fullName,
+      phoneNumber,
+      ...doctorDetails
+    } = doctorDto;
+
+    if (password !== confirm_password) {
+      throw new Error('Passwords do not match');
+    }
+
     const existingDoctor = await this.db.user.findUnique({
       where: { email: email },
     });
@@ -67,12 +80,14 @@ export class AuthService {
     if (existingDoctor) {
       throw new Error('Email is already in use');
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.db.user.create({
       data: {
         email: email,
-        password: password,
+        password: hashedPassword,
         fullName: fullName,
+        phoneNumber: phoneNumber,
         role: 'DOCTOR',
       },
     });
