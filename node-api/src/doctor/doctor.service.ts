@@ -9,7 +9,21 @@ export class DoctorService {
     private readonly emailService: EmailService,
   ) {}
   async findAll() {
-    return await this.db.doctor.findMany();
+    return await this.db.doctor.findMany({
+      select: {
+        id: true,
+        user: {
+          select: {
+            fullName: true,
+            email: true,
+            phoneNumber: true,
+          },
+        },
+        licenseNumber: true,
+        specialization: true,
+        yearsOfExperience: true,
+      },
+    });
   }
 
   async deleteDoctor(doctorId: string): Promise<any> {
