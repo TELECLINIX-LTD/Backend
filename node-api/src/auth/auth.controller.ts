@@ -27,7 +27,10 @@ export class AuthController {
       example1: {
         summary: 'Valid User Registration Data',
         value: {
-          email: 'user@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'joheDoe@example.com',
+          gender: 'Male',
           password: 'securePassword123',
           confirm_password: 'securePassword123',
         },
@@ -75,8 +78,9 @@ export class AuthController {
       example1: {
         summary: 'Valid Doctor Registration Data',
         value: {
-          email: 'doctor@example.com',
-          fullName: 'Dr. Jane Smith',
+          firstName: 'Jane',
+          lastName: 'Okaoye',
+          email: 'janeOkaoye@example.com',
           phoneNumber: '08134567890',
           licenseNumber: 'LIC-4567',
           specialization: 'Cardiology',
