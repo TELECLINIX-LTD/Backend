@@ -12,6 +12,16 @@ import {
 import { IsPasswordMatch } from 'src/common/validators/isPasswordMatch.validator';
 
 export class userRegisterDto {
+  @IsNotEmpty({ message: 'First name should not be empty.' })
+  @IsString({ message: 'First name must be a string.' })
+  @ApiProperty()
+  firstName: string;
+
+  @IsNotEmpty({ message: 'Last name should not be empty.' })
+  @IsString({ message: 'Last name must be a string.' })
+  @ApiProperty()
+  lastName: string;
+
   @IsNotEmpty({ message: 'Email should not be empty.' })
   @IsEmail({}, { message: 'Invalid email format.' })
   @ApiProperty()
@@ -21,6 +31,11 @@ export class userRegisterDto {
   @MinLength(8, { message: 'Password should be at least 8 characters long.' })
   @ApiProperty()
   password: string;
+
+  @IsNotEmpty({ message: 'Gender should not be empty.' })
+  @IsString({ message: 'Gender must be a string.' })
+  @ApiProperty()
+  gender: string;
 
   @IsNotEmpty({ message: 'Confirm password should not be empty.' })
   @MinLength(8, {
@@ -37,10 +52,15 @@ export class doctorRegistrationDto {
   @ApiProperty()
   email: string;
 
-  @IsNotEmpty({ message: 'Full name should not be empty.' })
-  @IsString({ message: 'Full name must be a string.' })
+  @IsNotEmpty({ message: 'First name should not be empty.' })
+  @IsString({ message: 'First name must be a string.' })
   @ApiProperty()
-  fullName: string;
+  firstName: string;
+
+  @IsNotEmpty({ message: 'Last name should not be empty.' })
+  @IsString({ message: 'Last name must be a string.' })
+  @ApiProperty()
+  lastName: string;
 
   @IsNotEmpty({ message: 'Phone number should not be empty.' })
   @IsString({ message: 'Phone number must be a string.' })

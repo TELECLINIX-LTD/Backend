@@ -18,7 +18,7 @@ export class AuthService {
   ) {}
 
   async signup(AuthDto: userRegisterDto) {
-    const { password, email } = AuthDto;
+    const { password, email, firstName, lastName, gender } = AuthDto;
 
     const emailToken = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -35,6 +35,8 @@ export class AuthService {
       data: {
         email: email,
         password: hashedPassword,
+        fullName: `${firstName} ${lastName}`,
+        gender: gender,
         emailToken,
       },
     });
@@ -64,7 +66,8 @@ export class AuthService {
       confirm_password,
       email,
       password,
-      fullName,
+      firstName,
+      lastName,
       phoneNumber,
       ...doctorDetails
     } = doctorDto;
@@ -86,7 +89,7 @@ export class AuthService {
       data: {
         email: email,
         password: hashedPassword,
-        fullName: fullName,
+        fullName: `${firstName} ${lastName}`,
         phoneNumber: phoneNumber,
         role: 'DOCTOR',
       },
