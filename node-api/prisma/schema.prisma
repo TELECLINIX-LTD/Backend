@@ -69,6 +69,9 @@ model Patient {
   id                   String          @id @default(cuid())
   userId               String @unique
   dateOfBirth          DateTime?
+  bloodGroup           String?
+  height               Float?  
+  weight               Float?
   emergencyContact     String?
   insuranceInformation String?        
   healthcareProviders  Doctor[]      @relation("PatientDoctor")
@@ -108,6 +111,7 @@ model Appointment {
   ailment    String? 
   specialty            String? 
   showTimesFor         String? 
+  uploadedResults      String?  
   date DateTime
   time DateTime
   reasonForVisit  String

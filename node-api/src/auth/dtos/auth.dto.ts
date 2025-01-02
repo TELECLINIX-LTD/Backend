@@ -41,6 +41,7 @@ export class userRegisterDto {
   @MinLength(8, {
     message: 'Confirm password should be at least 8 characters long.',
   })
+  
   @ApiProperty()
   @Validate(IsPasswordMatch, ['password'])
   confirm_password: string;
