@@ -100,4 +100,19 @@ export class EmailService {
       body,
     });
   }
+
+  async sendAppointmentConfirmation(
+    email: string,
+    fullName: string,
+    formattedDate: string,
+  ): Promise<void> {
+    const subject = 'Appointment Confirmation';
+    const body = `Dear ${fullName},\n\nYour appointment has been confirmed for ${formattedDate}. Wait for the doctor's confirmation.`;
+
+    await this.sendEmail({
+      to: email,
+      subject,
+      body,
+    });
+  }
 }
