@@ -33,6 +33,17 @@ enum Specialization {
   SURGEON
 }
 
+ enum AppointmentStatus {
+  PENDING
+  ACCEPTED
+  SCHEDULED
+  DECLINED
+  CANCELLED
+  COMPLETED
+}
+
+
+
 
 model User {
   id               String    @id @default(cuid())
@@ -101,22 +112,20 @@ model Doctor {
 }
 
 model Appointment {
-  id              String   @id @default(cuid())
-  patientId       String
-  doctorId      String
-  reason        String? 
+  id                   String   @id @default(cuid())
+  patientId            String
+  doctorId             String?
+  reason               String? 
   lastMedication       String? 
-  ailment    String? 
-  specialty            String? 
+  ailment              String
+  specialty            String?
   showTimesFor         String? 
   uploadedResults      String?  
-  date DateTime
-  time DateTime
-  reasonForVisit  String
-  status          String   @default("Scheduled")
+  appointmentTime      DateTime
+  status          AppointmentStatus   @default(PENDING)
 
   patient  Patient  @relation(fields: [patientId], references: [id])
-  doctor Doctor @relation(fields: [doctorId], references: [id])
+  doctor Doctor? @relation(fields: [doctorId], references: [id])
 }
 
 model MedicalRecord {

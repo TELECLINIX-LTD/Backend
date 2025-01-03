@@ -4,6 +4,8 @@ import { PatientProfileDto } from './dtos/patient-profile.dto';
 import { JwtAuthGuard } from 'src/auth/guards';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/common/enums/roles.enum';
 
 @ApiTags('Patient')
 @Controller('patient')
@@ -12,6 +14,7 @@ export class PatientController {
   constructor(private readonly patientService: PatientService) {}
 
   @Post('complete-profile')
+  @Roles(Role.PATIENT)
   @ApiOperation({ summary: 'Complete the patient profile' })
   @ApiBody({
     description: 'Patient profile information',
