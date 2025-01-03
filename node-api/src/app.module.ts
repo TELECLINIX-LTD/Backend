@@ -14,6 +14,7 @@ import { PatientModule } from './patient/patient.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 // import { RedisModule } from '@nestjs-modules/ioredis';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     DoctorModule,
     PatientModule,
     AppointmentModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [
