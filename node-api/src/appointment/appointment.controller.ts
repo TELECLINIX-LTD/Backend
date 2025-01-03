@@ -102,9 +102,11 @@ export class AppointmentController {
     const appointmentData = {
       ...createAppointmentDto,
       uploadedResults: uploadedResultUrl,
-      userId,
     };
 
-    await this.appointmentService.createAppointment(appointmentData);
+    return await this.appointmentService.createAppointment(
+      userId,
+      appointmentData,
+    );
   }
 }

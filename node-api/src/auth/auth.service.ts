@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
@@ -40,6 +44,13 @@ export class AuthService {
         emailToken,
       },
     });
+
+    await this.db.patient.create({
+      data: {
+        userId: user.id,
+      },
+    });
+
     await this.emailService.sendEmailVerification(user.email, emailToken);
     return user;
   }
@@ -122,6 +133,12 @@ export class AuthService {
 
     if (!user) {
       throw new UnauthorizedException('User does not exist');
+    }
+
+    if (!user.isEmailVerified) {
+      throw new BadRequestException(
+        'Please verify your email before logging in',
+      );
     }
 
     const passwordMatch = await bcrypt.compare(

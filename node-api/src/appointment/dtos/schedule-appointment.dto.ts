@@ -72,13 +72,4 @@ export class CreateAppointmentDto {
     { message: 'Appointment time must be in a valid ISO format.' },
   )
   appointmentTime: string;
-
-  @ApiProperty({
-    example: 'PENDING',
-    description: 'The status of the appointment.',
-    enum: AppointmentStatus,
-  })
-  @IsNotEmpty({ message: 'Status is required.' })
-  @IsString({ message: 'Status must be a valid AppointmentStatus.' })
-  status: AppointmentStatus = AppointmentStatus.PENDING;
 }

@@ -69,6 +69,7 @@ export class EmailService {
         hasCC: !!cc,
         hasBCC: !!bcc,
       });
+
       const result = await this.transporter.sendMail(mailOptions);
       this.logger.log('Email sent successfully:', result);
     } catch (error) {
@@ -101,6 +102,12 @@ export class EmailService {
     });
   }
 
+  /**
+   * Send an appointment confirmation email.
+   * @param email - Recipient email address.
+   * @param fullName - Full name of the recipient.
+   * @param formattedDate - Formatted appointment date.
+   */
   async sendAppointmentConfirmation(
     email: string,
     fullName: string,

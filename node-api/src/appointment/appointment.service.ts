@@ -8,20 +8,36 @@ export class AppointmentService {
     private readonly db: PrismaService,
     private readonly emailService: EmailService,
   ) {}
-  async createAppointment(appointmentData): Promise<any> {
-    const appointment = await this.db.appointment.create({
-      data: appointmentData,
-    });
-
+  async createAppointment(userId, appointmentData): Promise<any> {
     const user = await this.db.user.findUnique({
-      where: { id: appointmentData.userId },
+      where: { id: userId },
     });
 
     if (!user) {
       throw new Error('User not found');
     }
 
+    const patient = await this.db.patient.findUnique({
+      where: { userId: user.id },
+    });
+
+
+    if (!patient) {
+      throw new Error('Patient not found');
+    }
+
     const { email, fullName } = user;
+    const { id: patientId } = patient;
+
+    // Add patientId to the appointment data
+    const appointmentWithPatientId = {
+      ...appointmentData,
+      patientId, // Add patientId here
+    };
+
+    const appointment = await this.db.appointment.create({
+      data: appointmentWithPatientId,
+    });
 
     // Format the appointment time
     const appointmentTime = new Date(appointment.appointmentTime);
@@ -39,6 +55,7 @@ export class AppointmentService {
       fullName,
       formattedDate,
     );
+
     return {
       message: 'Appointment created and email sent successfully',
       data: appointment,
