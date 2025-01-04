@@ -36,4 +36,15 @@ export class PatientService {
       message: 'Patient profile updated successfully',
     };
   }
+
+  async getAllVerifiedPatients() {
+    const data = await this.db.user.findMany({
+      where: {
+        role: 'PATIENT',
+        isEmailVerified: true,
+      },
+    });
+
+    return data;
+  }
 }

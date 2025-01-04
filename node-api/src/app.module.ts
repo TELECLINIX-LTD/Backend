@@ -15,6 +15,8 @@ import { AppointmentModule } from './appointment/appointment.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 // import { RedisModule } from '@nestjs-modules/ioredis';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { SessionModule } from './session/session.module';
+import { PasswordModule } from './password/password.module';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     PatientModule,
     AppointmentModule,
     CloudinaryModule,
+    SessionModule,
+    PasswordModule,
   ],
   controllers: [AppController],
   providers: [

@@ -21,7 +21,6 @@ export class AppointmentService {
       where: { userId: user.id },
     });
 
-
     if (!patient) {
       throw new Error('Patient not found');
     }

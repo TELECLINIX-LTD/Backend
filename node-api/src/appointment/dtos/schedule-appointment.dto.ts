@@ -5,7 +5,6 @@ import {
   IsDateString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { AppointmentStatus } from 'src/common/enums/appointment-status.enum';
 
 export class CreateAppointmentDto {
   @ApiProperty({
