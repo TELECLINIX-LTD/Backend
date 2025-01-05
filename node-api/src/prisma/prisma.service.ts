@@ -5,12 +5,17 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor() {
     super({
-      log: ['query', 'info', 'warn', 'error'],
+      log: ['warn', 'error'],
     });
   }
   async onModuleInit() {
     await this.$connect();
   }
+
+  async onApplicationShutdown() {
+    await this.$disconnect();
+  }
+
   async enableshutDownHooks(app: INestApplication) {
     process.on('beforeExit', async () => {
       await app.close();
