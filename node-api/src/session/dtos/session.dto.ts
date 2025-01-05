@@ -29,5 +29,11 @@ export class SessionDto {
 }
 
 export class LogOutDto {
-  sessionId: string; // The session ID to log out the user
+  @ApiProperty({
+    description: 'The ID of the session to log out the user from.',
+    example: 'abcd1234-56ef-78gh-90ij-klmn12345opq',
+  })
+  @IsString()
+  @IsNotEmpty()
+  sessionId: string;
 }
