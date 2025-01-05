@@ -27,3 +27,7 @@ export class SessionDto {
   @IsNotEmpty()
   ipAddress: string;
 }
+
+export class LogOutDto {
+  sessionId: string; // The session ID to log out the user
+}

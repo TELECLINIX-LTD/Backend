@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SessionDto } from './dtos/session.dto';
+import { LogOutDto, SessionDto } from './dtos/session.dto';
 
 @Injectable()
 export class SessionService {
@@ -29,5 +29,18 @@ export class SessionService {
       message: 'Sessions retrieved successfully',
       data: user,
     };
+  }
+
+  async logOut(logOutDto: LogOutDto) {
+    const { sessionId } = logOutDto;
+
+    await this.db.session.update({
+      where: { id: sessionId },
+      data: {
+        logoutTime: new Date(),
+      },
+    });
+
+    return { message: 'Session ended successfully.' };
   }
 }
