@@ -59,6 +59,7 @@ model User {
   role             Role      @default(PATIENT)
   messagesSent     Message[] @relation("MessagesSent")
   messagesReceived Message[] @relation("MessagesReceived")
+  sessions         Session[]  
 
   authType AuthType @default(LOCAL)
 
@@ -126,6 +127,17 @@ model Appointment {
 
   patient  Patient  @relation(fields: [patientId], references: [id])
   doctor Doctor? @relation(fields: [doctorId], references: [id])
+}
+
+model Session{
+  id          String   @id @default(cuid())
+  userId      String
+  deviceInfo  String?
+  ipAddress   String?
+  loginTime   DateTime @default(now())
+  logoutTime  DateTime?  
+
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model MedicalRecord {

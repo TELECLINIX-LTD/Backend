@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import {
@@ -7,6 +7,8 @@ import {
   VerifyTokenDto,
 } from './dtos/auth.dto';
 import { LoginInputDto } from './dtos/login-input.dto';
+// import { Request } from 'express';
+import * as useragent from 'useragent';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -116,7 +118,31 @@ export class AuthController {
       },
     },
   })
-  async login(@Body() loginDto: LoginInputDto) {
-    return await this.authService.login(loginDto);
+  async login(
+    @Body() loginDto: LoginInputDto,
+    @Request() req: any,
+  ): Promise<any> {
+    // Get IP and Device Info
+    let ipAddress = Array.isArray(req.headers['x-forwarded-for'])
+      ? req.headers['x-forwarded-for'][0]
+      : req.headers['x-forwarded-for'] || req.ip || 'Unknown IP';
+
+    if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
+      ipAddress = 'localhost';
+    }
+
+    const agent = useragent.parse(
+      req.headers['user-agent'] || 'Unknown Device',
+    );
+    const deviceInfo =
+      agent.family !== 'Other'
+        ? `${agent.family} ${agent.os.family}`
+        : 'Unknown Device';
+
+    const session = {
+      ipAddress,
+      deviceInfo,
+    };
+    return await this.authService.login(loginDto, session);
   }
 }

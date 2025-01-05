@@ -11,6 +11,8 @@ import { doctorRegistrationDto, userRegisterDto } from './dtos/auth.dto';
 import { EmailService } from 'src/email/email.service';
 import { LoginInputDto } from './dtos/login-input.dto';
 import { SystemMessages } from 'src/common/constants/system.messages';
+import { SessionDto } from 'src/session/dtos/session.dto';
+import { SessionService } from 'src/session/session.service';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +21,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
     private readonly emailService: EmailService,
+    private readonly sessionService: SessionService,
   ) {}
 
   async signup(AuthDto: userRegisterDto) {
@@ -126,7 +129,8 @@ export class AuthService {
     return doctor;
   }
 
-  async login(loginDto: LoginInputDto) {
+  async login(loginDto: LoginInputDto, session) {
+    const { deviceInfo, ipAddress } = session;
     const user = await this.db.user.findUnique({
       where: { email: loginDto.email },
     });
@@ -156,6 +160,14 @@ export class AuthService {
         secret: this.config.get('JWT_SECRET_KEY'),
       },
     );
+
+    const logSessionDto: SessionDto = {
+      userId: user.id,
+      deviceInfo,
+      ipAddress,
+    };
+
+    await this.sessionService.logSession(logSessionDto);
 
     return { token, user };
   }
