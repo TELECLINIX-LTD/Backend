@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   Request,
   UploadedFile,
@@ -108,5 +109,17 @@ export class AppointmentController {
       userId,
       appointmentData,
     );
+  }
+
+  @Get()
+  @Roles(Role.DOCTOR)
+  @ApiOperation({ summary: 'Get all appointments' })
+  @ApiResponse({
+    status: 200,
+    description: 'Appointments retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'No appointments found' })
+  async getAppointments(): Promise<any> {
+    return await this.appointmentService.getAllAppointments();
   }
 }

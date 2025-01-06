@@ -60,4 +60,16 @@ export class AppointmentService {
       data: appointment,
     };
   }
+
+  async getAllAppointments(): Promise<any> {
+    const appointments = await this.db.appointment.findMany();
+    if (!appointments) {
+      throw new Error('No appointments found');
+    }
+
+    return {
+      message: 'Appointments retrieved successfully',
+      data: appointments,
+    };
+  }
 }
