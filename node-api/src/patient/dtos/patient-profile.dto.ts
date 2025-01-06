@@ -19,7 +19,7 @@ export class PatientProfileDto {
     example: '1990-01-01',
     description: "The patient's date of birth.",
   })
-  dateOfBirth: string;
+  dateOfBirth: Date;
 
   @IsOptional()
   @IsString({ message: 'Blood group must be a string.' })
