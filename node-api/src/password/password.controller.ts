@@ -14,7 +14,7 @@ import {
 import { PasswordService } from './password.service';
 
 @ApiTags('Password') // This will group all password-related endpoints
-@Controller('password')
+@Controller('auth/password')
 export class PasswordController {
   constructor(private passwordService: PasswordService) {}
 
