@@ -55,7 +55,6 @@ export class PasswordService {
     const user = await this.db.user.findUnique({
       where: { id },
     });
-    console.log('user the fucking uer', user);
     if (!user) {
       throw new HttpException(
         'User not found, or expired token',
