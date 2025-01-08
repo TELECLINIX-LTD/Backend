@@ -27,7 +27,7 @@ export class PasswordService {
       if (!user || !user.isEmailVerified) {
         return false;
       }
-      const payload = { email: user.email, id: user.id };
+      const payload = { id: user.id };
       const token = this.jwtService.sign(payload);
       const resetPasswordLink = `${process.env.CLIENT_URL}/auth/reset-password?token=${token}`;
       const emailPasswordDto = {
@@ -51,11 +51,11 @@ export class PasswordService {
     token: string,
   ): Promise<any> {
     const { newPassword } = resetPasswordDto;
-    const { email } = this.jwtService.verify(token);
+    const { id } = this.jwtService.verify(token);
     const user = await this.db.user.findUnique({
-      where: { email },
+      where: { id },
     });
-
+    console.log('user the fucking uer', user);
     if (!user) {
       throw new HttpException(
         'User not found, or expired token',
@@ -74,7 +74,7 @@ export class PasswordService {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await this.db.user.update({
-      where: { email },
+      where: { id },
       data: { password: hashedPassword },
     });
   }
