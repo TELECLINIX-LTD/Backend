@@ -29,27 +29,32 @@ export class DoctorService {
 
   async deleteDoctor(doctorId: string): Promise<any> {
     // Check if doctor exists
-    const doctor = await this.db.doctor.findUnique({
-      where: { id: doctorId },
-      include: { user: true },
-    });
-
-    if (!doctor) {
-      throw new NotFoundException('Doctor not found');
-    }
-    // Use a transaction to ensure both operations are done atomically
-    await this.db.$transaction([
-      this.db.doctor.delete({
+    try {
+      const doctor = await this.db.doctor.findUnique({
         where: { id: doctorId },
-      }),
-      this.db.user.delete({
-        where: { id: doctor.userId },
-      }),
-    ]);
+        include: { user: true },
+      });
 
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Doctor and associated user deleted successfully',
-    };
+      if (!doctor) {
+        throw new NotFoundException('Doctor not found');
+      }
+      // Use a transaction to ensure both operations are done atomically
+      await this.db.$transaction([
+        this.db.doctor.delete({
+          where: { id: doctorId },
+        }),
+        this.db.user.delete({
+          where: { id: doctor.userId },
+        }),
+      ]);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Doctor and associated user deleted successfully',
+      };
+    } catch (error) {
+      console.error('Error deleting doctor:', error);
+      throw new Error('An error occurred while deleting the doctor.');
+    }
   }
 }

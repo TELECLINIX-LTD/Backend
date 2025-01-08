@@ -33,7 +33,6 @@ export class DoctorController {
   async deleteDoctor(
     @Param('id') doctorId: string,
   ): Promise<{ message: string }> {
-    console.log(doctorId, 'I am the id');
     return await this.doctorService.deleteDoctor(doctorId);
   }
 }

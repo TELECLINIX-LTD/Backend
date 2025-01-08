@@ -75,7 +75,6 @@ export class AuthService {
   }
 
   async registerDoctor(doctorDto: doctorRegistrationDto) {
-    console.log(doctorDto);
     const {
       confirm_password,
       email,

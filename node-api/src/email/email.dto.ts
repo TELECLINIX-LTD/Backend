@@ -28,6 +28,21 @@ export class EmailInput {
   bcc?: string[];
 }
 
+export class EmailPasswordDto {
+  @ApiProperty()
+  @IsString()
+  fullName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty()
+  @IsString()
+  resetPasswordLink: string;
+}
+
 export class EmailOutput {
   @ApiProperty()
   message: string;

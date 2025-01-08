@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EmailInput } from './email.dto';
+import { EmailInput, EmailPasswordDto } from './email.dto';
 import { EmailConfig } from './email.config';
 import * as nodemailer from 'nodemailer';
 
@@ -58,7 +58,7 @@ export class EmailService {
         from: `"Notification" <${senderEmail}>`,
         to,
         subject,
-        text: body,
+        html: body,
         cc,
         bcc,
       };
@@ -115,6 +115,68 @@ export class EmailService {
   ): Promise<void> {
     const subject = 'Appointment Confirmation';
     const body = `Dear ${fullName},\n\nYour appointment has been confirmed for ${formattedDate}. Wait for the doctor's confirmation.`;
+
+    await this.sendEmail({
+      to: email,
+      subject,
+      body,
+    });
+  }
+
+  private generateHtmlBody(fullName: string, token: string): any {
+    return `
+    <!DOCTYPE html>
+<html>
+<head>
+  <style>
+    /* Add button styling */
+    h1{
+
+    text-align: center;
+    
+    }
+    .reset-button {
+      display: inline-block;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #ffffff;
+      background-color: #007BFF;
+      text-decoration: none;
+      border-radius: 5px;
+      border: none;
+    }
+    .reset-button:hover {
+      background-color: #0056b3;
+    }
+    .rest-button-container p {
+    color: white;
+
+   }
+  </style>
+</head>
+<body>
+  <h1><b>TELECLINIX</b></h1>
+  <p>Hello ${fullName},</p>
+  <h2>Reset your password</h2>
+  <p>We received a request to reset the password to your Teleclinix account. You can reset it by clicking on the button below. Please note this link will expire after 24 hours.</p>
+  <p class="reset-button-container">
+    <a href="https://teleclinix-react.vercel.app/reset-password?token=${token}" class="reset-button">
+      Reset Password
+    </a>
+  </p>
+  <p>If you didn’t initiate this request, please send us an email at <a href="mailto:support@teleclinix.com">support@teleclinix.co</a> so we can immediately look into this.</p>
+  <p>Best regards,<br>Team Teleclinix</p>
+</body>
+</html>
+
+    `;
+  }
+  async sendResetPasswordLink(
+    emailPasswordDto: EmailPasswordDto,
+  ): Promise<void> {
+    const { email, resetPasswordLink, fullName } = emailPasswordDto;
+    const subject = 'Reset Password';
+    const body = this.generateHtmlBody(fullName, resetPasswordLink);
 
     await this.sendEmail({
       to: email,
