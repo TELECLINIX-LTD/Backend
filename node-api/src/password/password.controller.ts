@@ -13,7 +13,7 @@ import {
 } from './dtos/reset-password.dto';
 import { PasswordService } from './password.service';
 
-@ApiTags('Password') // This will group all password-related endpoints
+@ApiTags('Password')
 @Controller('auth/password')
 export class PasswordController {
   constructor(private passwordService: PasswordService) {}
