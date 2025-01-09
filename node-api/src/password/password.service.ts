@@ -26,9 +26,9 @@ export class PasswordService {
     });
 
     if (!user || !user.isEmailVerified) {
-      throw new UnauthorizedException(
-        SystemMessages.AUTH_PASSWORD_USER_NOT_FOUND,
-      );
+      throw new UnauthorizedException({
+        message: SystemMessages.AUTH_PASSWORD_USER_NOT_FOUND,
+      });
     }
     const payload = { id: user.id };
     const token = this.jwtService.sign(payload);
@@ -41,7 +41,7 @@ export class PasswordService {
     };
     await this.emailService.sendResetPasswordLink(emailPasswordDto);
 
-    return { message: 'Reset password link sent successfully', success: true };
+    return { message: 'Reset password link sent successfully' };
   }
 
   async resetPassword(
@@ -54,9 +54,9 @@ export class PasswordService {
       where: { id },
     });
     if (!user) {
-      throw new UnauthorizedException(
-        SystemMessages.AUTH_PASSWORD_TOKEN_INVALID,
-      );
+      throw new UnauthorizedException({
+        message: SystemMessages.AUTH_PASSWORD_TOKEN_INVALID,
+      });
     }
 
     // Check if the new password is the same as the current password
@@ -73,7 +73,6 @@ export class PasswordService {
 
     return {
       message: SystemMessages.AUTH_RESET_PASSWORD_SUCCESS,
-      status: true,
     };
   }
 }

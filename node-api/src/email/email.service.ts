@@ -126,48 +126,43 @@ export class EmailService {
   private generateHtmlBody(fullName: string, token: string): any {
     return `
     <!DOCTYPE html>
-<html>
-<head>
-  <style>
-    /* Add button styling */
-    h1{
+      <html>
+      <head>
+        <style>
+          h1{
+          text-align: center;          
+          }
+          .reset-button {
+            display: inline-block;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #ffffff !important;
+            background-color: #2467E3;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            font-weight: 500;
+            font-size: 1rem;
+            text-align: center;
+          } 
 
-    text-align: center;
-    
-    }
-    .reset-button {
-      display: inline-block;
-      padding: 10px 20px;
-      font-size: 16px;
-      color: #ffffff;
-      background-color: #007BFF;
-      text-decoration: none;
-      border-radius: 5px;
-      border: none;
-    }
-    .reset-button:hover {
-      background-color: #0056b3;
-    }
-    .rest-button-container p {
-    color: white;
-
-   }
-  </style>
-</head>
-<body>
-  <h1><b>TELECLINIX</b></h1>
-  <p>Hello ${fullName},</p>
-  <h2>Reset your password</h2>
-  <p>We received a request to reset the password to your Teleclinix account. You can reset it by clicking on the button below. Please note this link will expire after 24 hours.</p>
-  <p class="reset-button-container">
-    <a href="https://teleclinix-react.vercel.app/reset-password?token=${token}" class="reset-button">
-      Reset Password
-    </a>
-  </p>
-  <p>If you didn’t initiate this request, please send us an email at <a href="mailto:support@teleclinix.com">support@teleclinix.co</a> so we can immediately look into this.</p>
-  <p>Best regards,<br>Team Teleclinix</p>
-</body>
-</html>
+        </style>
+      </head>
+      <body>
+        <h1><b>TELECLINIX</b></h1>
+        <p>Hello ${fullName},</p>
+        <h2>Reset your password</h2>
+        <p>We received a request to reset the password to your Teleclinix account. You can reset it by clicking on the button below. Please note this link will expire after 24 hours.</p>
+        <div>
+          <a href="https://teleclinix-react.vercel.app/reset-password?token=${token}" class="reset-button">
+          Reset Password
+          </a>
+        </div>
+        <p>If you didn’t initiate this request, please send us an email at <a href="mailto:support@teleclinix.com">support@teleclinix.co</a> so we can immediately look into this.</p>
+        <p>Best regards,<br>Team Teleclinix</p>
+      </body>
+      </html>
 
     `;
   }
