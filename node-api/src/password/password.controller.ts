@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpException,
-  HttpStatus,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import {
   ResetPasswordRequestDto,
@@ -26,7 +19,7 @@ export class PasswordController {
   })
   @ApiResponse({
     status: 404,
-    description: 'User not found or email not verified',
+    description: 'User not found or email is not verified',
   })
   async forgotPassword(
     @Body() resetPasswordRequestDto: ResetPasswordRequestDto,
@@ -34,13 +27,8 @@ export class PasswordController {
     const result = await this.passwordService.sendResetPasswordLink(
       resetPasswordRequestDto,
     );
-    if (!result) {
-      throw new HttpException(
-        'User not found or email not verified',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    return { message: 'Password reset email sent' };
+
+    return result;
   }
 
   @Post('reset-password')
@@ -51,19 +39,22 @@ export class PasswordController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid token or expired',
+    description: 'User not found, or expired token',
   })
   @ApiQuery({
     name: 'token',
     required: true,
-    description: 'The reset password token sent to the user',
+    description: 'The reset password in your query params',
     type: String,
   })
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
     @Query('token') token?: string,
   ) {
-    await this.passwordService.resetPassword(resetPasswordDto, token);
-    return { message: 'Password reset successful' };
+    const result = await this.passwordService.resetPassword(
+      resetPasswordDto,
+      token,
+    );
+    return result;
   }
 }
