@@ -52,4 +52,44 @@ export class PatientService {
 
     return data;
   }
+
+  async getPatientProfile(userId: string) {
+    const user = await this.db.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const patient = await this.db.patient.findFirst({
+      where: {
+        userId: userId,
+      },
+      select: {
+        id: true,
+        dateOfBirth: true,
+        bloodGroup: true,
+        height: true,
+        weight: true,
+        emergencyContact: true,
+        healthcareProviders: true,
+        appointments: true,
+        medicalRecords: true,
+        notifications: true,
+        user: {
+          select: {
+            fullName: true,
+            email: true,
+            phoneNumber: true,
+          },
+        },
+      },
+    });
+
+    if (!patient) {
+      throw new Error('Patient not found');
+    }
+
+    return patient;
+  }
 }

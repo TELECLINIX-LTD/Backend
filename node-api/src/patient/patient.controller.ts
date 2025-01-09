@@ -105,4 +105,45 @@ export class PatientController {
       patients,
     };
   }
+
+  @Get('profile')
+  @Roles(Role.PATIENT)
+  @ApiOperation({
+    summary: 'Fetch the patient profile',
+    description: 'Retrieve the profile information for the logged-in patient.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully fetched patient profile.',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          id: 'cuid5678',
+          dateOfBirth: '1990-01-01T00:00:00.000Z',
+          bloodGroup: 'O+',
+          height: 180.5,
+          weight: 75.3,
+          emergencyContact: '+19876543210',
+          healthcareProviders: [],
+          appointments: [],
+          medicalRecords: [],
+          notifications: [],
+          user: {
+            fullName: 'John Doe',
+            email: 'Jonedoe@gmail.com',
+            phoneNumber: '09012345678',
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error.',
+  })
+  async getPatientProfile(@Request() req: any) {
+    const userId = req.user.id; // Extract user ID from the JWT token
+    return await this.patientService.getPatientProfile(userId);
+  }
 }
