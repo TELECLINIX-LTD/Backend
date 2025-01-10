@@ -138,7 +138,7 @@ export class AuthService {
       throw new UnauthorizedException('User does not exist');
     }
 
-    if (user.role === 'DOCTOR' && !user.isEmailVerified) {
+    if (user.role === 'PATIENT' && !user.isEmailVerified) {
       throw new BadRequestException(
         'Please verify your email before logging in',
       );
