@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware 
 from database.database import engine, Base
@@ -55,13 +55,45 @@ try:
 except Exception as e:
     logger.error(f"Failed to create database: {e}")
 
-
+# Include routers
 app.include_router(router = authentication.auth_router, tags=["JWT Authentication"])
-app.include_router(router = google_auth.app)
+app.include_router(router = google_auth.app, tags=["Google Authentication"])
 app.include_router(router = doctors_auth.doc_router, tags=["Doctors"])
 
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def send_personal_message(self, websocket: WebSocket, message: str):
+        await websocket.send_text(message)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+connection_manager = ConnectionManager()
 
 
 @app.get("/", tags=["Home"])
 async def root():
     return {"message": "Welcome to TeleClinix API Documentation, Navigate to /docs to view documentation."}
+
+
+@app.websocket("/ws/chat/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: int):
+    await connection_manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await connection_manager.send_personal_message(f"You wrote: {data}", websocket)
+            await connection_manager.broadcast(f"Client {client_id}: {data}")
+    except WebSocketDisconnect:
+        connection_manager.disconnect(websocket)
+        await connection_manager.broadcast(f"Client #{client_id} has left the chat")

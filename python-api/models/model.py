@@ -1,11 +1,4 @@
-# from sqlalchemy import Column, Integer, String
-# from sqlalchemy.orm import declarative_base
-# from database.database import Base
-
-# Base = declarative_base()
-
-
-
+# Description: This file contains the database models for the application.
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Enum, ForeignKey
 from database.database import Base
 from core.security import get_password_hash, verify_password
@@ -100,3 +93,12 @@ class Prescription(Base):
     
     # Relationships
     consultation = relationship("Consultation", back_populates="prescriptions")
+
+class Message(Base):
+    __tablename__ = 'messages'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, index=True)
+    recipient_id = Column(Integer, index=True)
+    message = Column(Text)
+    timestamp = Column(DateTime, default=datetime.utcnow)

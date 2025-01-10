@@ -11,4 +11,4 @@ venv/
 .db
 .sql
 teleclinix-database.sqlite
-teleclinix
+teleclinix oauth credentials.json
