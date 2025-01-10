@@ -9,7 +9,7 @@ export class DoctorService {
     private readonly emailService: EmailService,
   ) {}
   async findAll() {
-    return await this.db.doctor.findMany({
+    const doctors = await this.db.doctor.findMany({
       select: {
         id: true,
         user: {
@@ -25,6 +25,34 @@ export class DoctorService {
         yearsOfExperience: true,
       },
     });
+
+    return doctors;
+  }
+
+  async getDoctorProfile(doctorId: string) {
+    const doctor = await this.db.doctor.findUnique({
+      where: { id: doctorId },
+      select: {
+        id: true,
+        user: {
+          select: {
+            fullName: true,
+            email: true,
+            phoneNumber: true,
+          },
+        },
+        licenseNumber: true,
+        specialization: true,
+        availability: true,
+        yearsOfExperience: true,
+      },
+    });
+
+    if (!doctor) {
+      throw new NotFoundException('Doctor not found');
+    }
+
+    return doctor;
   }
 
   async deleteDoctor(doctorId: string): Promise<any> {
