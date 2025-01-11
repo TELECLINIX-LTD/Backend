@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { EmailService } from 'src/email/email.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -66,6 +71,7 @@ export class DoctorService {
       if (!doctor) {
         throw new NotFoundException('Doctor not found');
       }
+
       // Use a transaction to ensure both operations are done atomically
       await this.db.$transaction([
         this.db.doctor.delete({
@@ -82,7 +88,7 @@ export class DoctorService {
       };
     } catch (error) {
       console.error('Error deleting doctor:', error);
-      throw new Error('An error occurred while deleting the doctor.');
+      throw new BadRequestException('Failed to delete doctor and user');
     }
   }
 }
