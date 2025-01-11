@@ -149,7 +149,9 @@ export class AuthService {
       user.password,
     );
     if (!passwordMatch) {
-      throw new UnauthorizedException(SystemMessages.AUTH_INVALID_CREDENTIALS);
+      throw new UnauthorizedException(
+        SystemMessages.AUTH_INVALID_PASSWORD_CREDENTIALS,
+      );
     }
 
     const token = this.jwtService.sign(

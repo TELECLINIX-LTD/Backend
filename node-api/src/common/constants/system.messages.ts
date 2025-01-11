@@ -9,7 +9,7 @@ export const SystemMessages = {
 
   AUTH_LOGIN_SUCCESS: 'Login successful',
   AUTH_LOGOUT_SUCCESS: 'Logout successful',
-  AUTH_INVALID_CREDENTIALS: 'Invalid email or password',
+  AUTH_INVALID_PASSWORD_CREDENTIALS: 'password is incorrect',
   AUTH_USER_NOT_FOUND: 'User does not exist',
   AUTH_REGISTER_SUCCESS: 'Registration successful',
   AUTH_PASSWORD_MISMATCH: 'Passwords do not match',
