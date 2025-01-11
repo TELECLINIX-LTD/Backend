@@ -1,5 +1,7 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 from starlette.middleware.sessions import SessionMiddleware 
 from database.database import engine, Base
 
@@ -28,6 +30,8 @@ app = FastAPI(
         "Important": "Any Authentication endpoint that requires a username, use the Email"
     }
 )
+
+templates = Jinja2Templates(directory="templates")
 
 origins = [
     "http://localhost",
@@ -71,7 +75,7 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def send_personal_message(self, websocket: WebSocket, message: str):
+    async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
     async def broadcast(self, message: str):
@@ -86,7 +90,11 @@ async def root():
     return {"message": "Welcome to TeleClinix API Documentation, Navigate to /docs to view documentation."}
 
 
-@app.websocket("/ws/chat/{client_id}")
+@app.get("/chat", response_class=HTMLResponse)
+async def chat(request: Request):
+    return templates.TemplateResponse("chat.html", {"request": request})
+
+@app.websocket("/api/chat/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     await connection_manager.connect(websocket)
     try:
