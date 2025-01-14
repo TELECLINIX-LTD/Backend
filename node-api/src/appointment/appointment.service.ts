@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { EmailService } from 'src/email/email.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class AppointmentService {
   constructor(
     private readonly db: PrismaService,
     private readonly emailService: EmailService,
+    private readonly redisService: RedisService,
   ) {}
   async createAppointment(userId, appointmentData): Promise<any> {
     const user = await this.db.user.findUnique({
@@ -62,10 +64,20 @@ export class AppointmentService {
   }
 
   async getAllAppointments(): Promise<any> {
+    //add cache key
+    const cachedKey = 'all_appointments';
+    const cachedAppointments = await this.redisService.get(cachedKey);
+    if (cachedAppointments) {
+      console.log('All appointments data fetched from cache');
+      return JSON.parse(cachedAppointments);
+    }
+
     const appointments = await this.db.appointment.findMany();
     if (!appointments) {
       throw new Error('No appointments found');
     }
+
+    await this.redisService.set(cachedKey, JSON.stringify(appointments), 3600);
 
     return {
       message: 'Appointments retrieved successfully',
