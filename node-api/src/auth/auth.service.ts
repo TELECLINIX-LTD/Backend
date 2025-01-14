@@ -170,7 +170,8 @@ export class AuthService {
     };
 
     await this.sessionService.logSession(logSessionDto);
+    const { password, ...userWithoutPassword } = user;
 
-    return { token, user };
+    return { token, user: userWithoutPassword };
   }
 }
