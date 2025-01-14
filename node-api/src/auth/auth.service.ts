@@ -80,6 +80,7 @@ export class AuthService {
       email,
       password,
       firstName,
+      gender,
       lastName,
       phoneNumber,
       ...doctorDetails

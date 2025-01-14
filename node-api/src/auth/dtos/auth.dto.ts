@@ -62,6 +62,11 @@ export class doctorRegistrationDto {
   @ApiProperty()
   lastName: string;
 
+  @IsNotEmpty({ message: 'Gender should not be empty.' })
+  @IsString({ message: 'Gender must be a string.' })
+  @ApiProperty()
+  gender: string;
+
   @IsNotEmpty({ message: 'Phone number should not be empty.' })
   @IsString({ message: 'Phone number must be a string.' })
   @ApiProperty()

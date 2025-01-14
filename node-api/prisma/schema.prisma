@@ -137,7 +137,7 @@ model Session{
   loginTime   DateTime @default(now())
   logoutTime  DateTime?  
 
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model MedicalRecord {
