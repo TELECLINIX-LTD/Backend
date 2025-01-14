@@ -44,6 +44,8 @@ export class SessionService {
       take,
     });
 
+    console.log('Data fetched from database', sessions);
+
     if (!sessions || sessions.length === 0) {
       throw new Error('User not found or no sessions found');
     }
@@ -66,7 +68,7 @@ export class SessionService {
     };
 
     //set cache
-    await this.redisService.set(cacheKey, JSON.stringify(response));
+    await this.redisService.set(cacheKey, JSON.stringify(response), 172800);
 
     return response;
   }
