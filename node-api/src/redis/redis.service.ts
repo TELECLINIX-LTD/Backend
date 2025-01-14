@@ -19,7 +19,7 @@ export class RedisService implements OnModuleInit {
     if (ttl) {
       await this.redisClient.set(key, value, 'EX', ttl);
     } else {
-      await this.redisClient.set(key, JSON.stringify(value));
+      await this.redisClient.set(key, value);
     }
   }
 

@@ -22,7 +22,7 @@ export class DoctorService {
     const cachedDoctors = await this.redisService.get(cacheKey);
     if (cachedDoctors) {
       console.log('All doctors data fetched from cache');
-      return JSON.parse(cachedDoctors);
+      return cachedDoctors;
     }
 
     const doctors = await this.db.doctor.findMany({
@@ -55,7 +55,7 @@ export class DoctorService {
     const cachedDoctor = await this.redisService.get(cachedProfile);
     if (cachedDoctor) {
       console.log('Data fetched from cache');
-      return JSON.parse(cachedDoctor);
+      return cachedDoctor;
     }
 
     const doctor = await this.db.doctor.findUnique({

@@ -32,7 +32,7 @@ export class SessionService {
     const cachedData = await this.redisService.get(cacheKey);
     if (cachedData) {
       console.log('Data fetched from cache');
-      return JSON.parse(cachedData);
+      return cachedData;
     }
 
     const take = limit || 8;
@@ -43,8 +43,6 @@ export class SessionService {
       skip,
       take,
     });
-
-    console.log('Data fetched from database', sessions);
 
     if (!sessions || sessions.length === 0) {
       throw new Error('User not found or no sessions found');
