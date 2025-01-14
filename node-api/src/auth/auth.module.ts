@@ -8,6 +8,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { EmailModule } from 'src/email/email.module';
 import { ConfigService } from '@nestjs/config';
 import { SessionService } from 'src/session/session.service';
+import { RedisService } from 'src/redis/redis.service';
 
 @Module({
   imports: [UsersModule, JwtModule.register({}), EmailModule],
@@ -18,6 +19,7 @@ import { SessionService } from 'src/session/session.service';
     PrismaService,
     ConfigService,
     SessionService,
+    RedisService,
   ],
 })
 export class AuthModule {}

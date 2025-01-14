@@ -1,5 +1,53 @@
-import { IsString, IsNotEmpty, IsIP } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsIP,
+  IsOptional,
+  IsIn,
+  IsNumber,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform, TransformFnParams } from 'class-transformer';
+
+export class QuerySessionDto {
+  @ApiProperty({
+    description: 'The sort order of the sessions.',
+    example: 'desc',
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(['asc', 'desc'], { message: 'Order must be asc or desc' })
+  sort: string = 'desc';
+
+  @ApiProperty({
+    description: 'The limit of sessions to retrieve.',
+    example: 10,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }: TransformFnParams) => parseInt(value, 10))
+  limit: number = 10;
+
+  @ApiProperty({
+    description: 'The page number to retrieve.',
+    example: 1,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }: TransformFnParams) => parseInt(value, 10))
+  page: number = 1;
+
+  @ApiProperty({
+    description: 'The field to sort the sessions by.',
+    example: 'loginTime',
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(['loginTime', 'sessionId'], {
+    message: 'Sort by must be loginTime or sessionId',
+  })
+  sortBy: string = 'loginTime';
+}
 
 export class SessionDto {
   @ApiProperty({

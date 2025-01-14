@@ -5,9 +5,10 @@ import {
   Get,
   Request,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
-import { LogOutDto, SessionDto } from './dtos/session.dto';
+import { LogOutDto, QuerySessionDto, SessionDto } from './dtos/session.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
@@ -27,12 +28,17 @@ export class SessionController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all sessions of a user' })
+  @ApiOperation({
+    summary: 'Get all sessions of a user with pagination and caching',
+  })
   @ApiResponse({ status: 200, description: 'Sessions retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
-  async getUserSessions(@Request() req: any) {
-    const userId = req?.user.id;
-    return await this.sessionService.getUserSessions(userId);
+  async getUserSessions(
+    @Request() req: any,
+    @Query() querySessionDto: QuerySessionDto,
+  ) {
+    const userId = req?.user?.id;
+    return await this.sessionService.getUserSessions(userId, querySessionDto);
   }
 
   @Post('log-out')
