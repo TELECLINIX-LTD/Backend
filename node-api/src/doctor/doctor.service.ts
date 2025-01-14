@@ -6,14 +6,25 @@ import {
 } from '@nestjs/common';
 import { EmailService } from 'src/email/email.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class DoctorService {
   constructor(
     private readonly db: PrismaService,
     private readonly emailService: EmailService,
+    private readonly redisService: RedisService,
   ) {}
   async findAll() {
+    const cacheKey = 'all_doctors';
+
+    // Check if doctors are cached
+    const cachedDoctors = await this.redisService.get(cacheKey);
+    if (cachedDoctors) {
+      console.log('All doctors data fetched from cache');
+      return JSON.parse(cachedDoctors);
+    }
+
     const doctors = await this.db.doctor.findMany({
       select: {
         id: true,
@@ -31,10 +42,22 @@ export class DoctorService {
       },
     });
 
+    //set cache
+    await this.redisService.set(cacheKey, JSON.stringify(doctors), 3600);
+
     return doctors;
   }
 
   async getDoctorProfile(doctorId: string) {
+    const cachedProfile = `doctor-${doctorId}`;
+
+    // Check if doctor profile is cached
+    const cachedDoctor = await this.redisService.get(cachedProfile);
+    if (cachedDoctor) {
+      console.log('Data fetched from cache');
+      return JSON.parse(cachedDoctor);
+    }
+
     const doctor = await this.db.doctor.findUnique({
       where: { id: doctorId },
       select: {
@@ -56,6 +79,9 @@ export class DoctorService {
     if (!doctor) {
       throw new NotFoundException('Doctor not found');
     }
+
+    //set cache
+    await this.redisService.set(cachedProfile, JSON.stringify(doctor), 1000);
 
     return doctor;
   }

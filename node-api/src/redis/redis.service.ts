@@ -18,8 +18,9 @@ export class RedisService implements OnModuleInit {
   async set(key: string, value: string, ttl: number = 600): Promise<void> {
     if (ttl) {
       await this.redisClient.set(key, value, 'EX', ttl);
+    } else {
+      await this.redisClient.set(key, JSON.stringify(value));
     }
-    await this.redisClient.set(key, JSON.stringify(value));
   }
 
   async get(key: string): Promise<any> {
