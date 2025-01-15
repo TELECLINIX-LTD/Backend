@@ -85,12 +85,12 @@ class ConnectionManager:
 connection_manager = ConnectionManager()
 
 
-@app.get("/", tags=["Home"])
+@app.get("/home", tags=["Home"])
 async def root():
     return {"message": "Welcome to TeleClinix API Documentation, Navigate to /docs to view documentation."}
 
 
-@app.get("/chat", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse)
 async def chat(request: Request):
     return templates.TemplateResponse("chat.html", {"request": request})
 
