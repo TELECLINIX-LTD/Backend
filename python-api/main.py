@@ -94,14 +94,14 @@ async def root():
 async def chat(request: Request):
     return templates.TemplateResponse("chat.html", {"request": request})
 
-@app.websocket("/api/chat/{client_id}")
+@app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
-    await websocket.accept()
-    try:
+    await manager.connect(websocket)
+    try: 
         while True:
             data = await websocket.receive_text()
-            await websocket.send_text(f"Message received: {data}")
+            await manager.send_personal_message(f"You wrote: {data}", websocket)
+            await manager.broadcast(f"Client #{client_id} says: {data}")
     except WebSocketDisconnect:
-        print("Client disconnected")
-    finally:
-        await websocket.close()
+        manager.disconnect(websocket)
+        await manager.broadcast(f"Client #{client_id} has left the chat")
