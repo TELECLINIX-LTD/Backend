@@ -96,12 +96,12 @@ async def chat(request: Request):
 
 @app.websocket("/api/chat/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
-    await connection_manager.connect(websocket)
+    await websocket.accept()
     try:
         while True:
             data = await websocket.receive_text()
-            await connection_manager.send_personal_message(f"You wrote: {data}", websocket)
-            await connection_manager.broadcast(f"Client {client_id}: {data}")
+            await websocket.send_text(f"Message received: {data}")
     except WebSocketDisconnect:
-        connection_manager.disconnect(websocket)
-        await connection_manager.broadcast(f"Client #{client_id} has left the chat")
+        print("Client disconnected")
+    finally:
+        await websocket.close()
