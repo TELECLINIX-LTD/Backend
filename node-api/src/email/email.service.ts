@@ -241,8 +241,6 @@ export class EmailService {
       <p>We are pleased to inform you that your appointment has been scheduled for ${formattedDate}. Please note that the appointment is currently pending confirmation from the doctor.</p>
       <p>We will notify you promptly once the doctor has confirmed. If you have any questions or need further assistance, please feel free to reach out to us.</p>
       <p>Thank you for choosing our services. Wishing you good health and well-being.</p>
-      <p>Best regards,</p>
-      <p>Teleclinix Team</p>
     `;
     const htmlBody = this.generateHtmlBody(content);
 
