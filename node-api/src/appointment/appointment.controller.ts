@@ -2,6 +2,9 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
+  Param,
   Post,
   Request,
   UploadedFile,
@@ -108,6 +111,30 @@ export class AppointmentController {
     return await this.appointmentService.createAppointment(
       userId,
       appointmentData,
+    );
+  }
+
+  @Post(':id/accept')
+  @Roles(Role.DOCTOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Accept an appointment' })
+  @ApiResponse({
+    status: 200,
+    description: 'Appointment accepted successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Unauthorized to accept this appointment',
+  })
+  @ApiResponse({ status: 404, description: 'Appointment not found' })
+  async acceptAppointment(
+    @Param('id') appointmentId: string,
+    @Request() req: any,
+  ): Promise<any> {
+    const doctorId = req.user.id;
+    return await this.appointmentService.acceptAppointment(
+      appointmentId,
+      doctorId,
     );
   }
 

@@ -43,7 +43,12 @@ export class DoctorService {
     });
 
     //set cache
-    await this.redisService.set(cacheKey, JSON.stringify(doctors), 3600);
+    const doctorsincahce = await this.redisService.set(
+      cacheKey,
+      JSON.stringify(doctors),
+      3600,
+    );
+    console.log('All doctors data fetched from database', doctorsincahce);
 
     return doctors;
   }

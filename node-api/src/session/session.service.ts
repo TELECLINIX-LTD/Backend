@@ -37,9 +37,11 @@ export class SessionService {
 
     const take = limit || 8;
 
+    const order = sort === 'desc' ? -1 : 1;
+
     const sessions = await this.db.session.findMany({
       where: { userId },
-      orderBy: { [sortBy]: sort },
+      orderBy: { [sortBy]: order },
       skip,
       take,
     });

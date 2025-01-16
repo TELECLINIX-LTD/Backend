@@ -114,7 +114,8 @@ export class EmailService {
     formattedDate: string,
   ): Promise<void> {
     const subject = 'Appointment Confirmation';
-    const body = `Dear ${fullName},\n\nYour appointment has been confirmed for ${formattedDate}. Wait for the doctor's confirmation.`;
+
+    const body = `Dear ${fullName},\n\nWe are pleased to inform you that your appointment has been scheduled for ${formattedDate}. Please note that the appointment is currently pending confirmation from the doctor. \n\nWe will notify you promptly once the doctor has confirmed. If you have any questions or need further assistance, please feel free to reach out to us.\n\nThank you for choosing our services. Wishing you good health and well-being.\n\nBest regards,\nTeleclinix Team`;
 
     await this.sendEmail({
       to: email,
@@ -172,6 +173,22 @@ export class EmailService {
     const { email, resetPasswordLink, fullName } = emailPasswordDto;
     const subject = 'Reset Password';
     const body = this.generateHtmlBody(fullName, resetPasswordLink);
+
+    await this.sendEmail({
+      to: email,
+      subject,
+      body,
+    });
+  }
+
+  async sendAppointmentAccepted(
+    doctorsName: string,
+    patientName: string,
+    email: string,
+    formattedDate: string,
+  ): Promise<void> {
+    const subject = 'Appointment Accepted';
+    const body = `Dear ${patientName},\n\nWe are pleased to inform you that your appointment has been confirmed for ${formattedDate}. Dr. ${doctorsName} will be attending to you and is looking forward to providing you with the best care possible.\n\nIf you have any questions or need to reschedule, please feel free to contact us at your earliest convenience.\n\nThank you for choosing our services. Wishing you good health and a speedy recovery.\n\nBest regards,\n[Your Clinic Name] Team`;
 
     await this.sendEmail({
       to: email,
