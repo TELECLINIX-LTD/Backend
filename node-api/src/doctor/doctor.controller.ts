@@ -1,4 +1,11 @@
-import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards';
@@ -38,7 +45,8 @@ export class DoctorController {
     status: 404,
     description: 'Doctor not found',
   })
-  async getDoctorProfile(@Param('id') doctorId: string): Promise<any> {
+  async getDoctorProfile(@Request() req: any): Promise<any> {
+    const doctorId = req.user.id;
     return await this.doctorService.getDoctorProfile(doctorId);
   }
 
@@ -54,8 +62,8 @@ export class DoctorController {
     description: 'Doctor not found',
   })
   async deleteDoctor(
-    @Param('id') doctorId: string,
+    @Param('id') userId: string,
   ): Promise<{ message: string }> {
-    return await this.doctorService.deleteDoctor(doctorId);
+    return await this.doctorService.deleteDoctor(userId);
   }
 }

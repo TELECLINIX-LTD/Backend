@@ -53,8 +53,8 @@ export class DoctorService {
     return doctors;
   }
 
-  async getDoctorProfile(doctorId: string) {
-    const cachedProfile = `doctor-${doctorId}`;
+  async getDoctorProfile(userId: string) {
+    const cachedProfile = `doctor-${userId}`;
 
     // Check if doctor profile is cached
     const cachedDoctor = await this.redisService.get(cachedProfile);
@@ -63,7 +63,17 @@ export class DoctorService {
       return cachedDoctor;
     }
 
-    const doctor = await this.db.doctor.findUnique({
+    const doctor = await this.db.doctor?.findUnique({
+      where: { userId: userId },
+    });
+
+    if (!doctor) {
+      throw new NotFoundException('Doctor not found');
+    }
+
+    const doctorId = doctor.id;
+
+    const doctorsProfile = await this.db.doctor?.findUnique({
       where: { id: doctorId },
       select: {
         id: true,
@@ -81,14 +91,18 @@ export class DoctorService {
       },
     });
 
-    if (!doctor) {
+    if (!doctorsProfile) {
       throw new NotFoundException('Doctor not found');
     }
 
     //set cache
-    await this.redisService.set(cachedProfile, JSON.stringify(doctor), 1000);
+    await this.redisService.set(
+      cachedProfile,
+      JSON.stringify(doctorsProfile),
+      1000,
+    );
 
-    return doctor;
+    return doctorsProfile;
   }
 
   async deleteDoctor(doctorId: string): Promise<any> {
