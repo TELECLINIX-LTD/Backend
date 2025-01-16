@@ -128,7 +128,7 @@ export class EmailService {
                   border-radius: 8px;
                   font-size: 16px;
                   color: #ffffff !important;
-                  background-color: #2467E3
+                  background-color: #2467E3;
                   text-decoration: none;
                   border: none;
                   border-radius: 5px;
@@ -136,7 +136,7 @@ export class EmailService {
                   font-size: 1rem;
                   text-align: center;                
                 }
-                  
+
                 .container p {
                     margin: 15px 0;
                     font-size: 14px;
