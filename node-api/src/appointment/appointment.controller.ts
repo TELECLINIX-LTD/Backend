@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Request,
   UploadedFile,
@@ -114,7 +115,7 @@ export class AppointmentController {
     );
   }
 
-  @Post(':id/accept')
+  @Patch(':id/accept')
   @Roles(Role.DOCTOR)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Accept an appointment' })
