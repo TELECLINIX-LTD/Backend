@@ -121,6 +121,22 @@ export class EmailService {
                     padding: 60px 0;
                     margin: 0;
                 }
+
+                .reset-button{
+                  display: inline-block;
+                  padding: 1rem;
+                  border-radius: 8px;
+                  font-size: 16px;
+                  color: #ffffff !important;
+                  background-color: #2467E3
+                  text-decoration: none;
+                  border: none;
+                  border-radius: 5px;
+                  font-weight: 500;
+                  font-size: 1rem;
+                  text-align: center;                
+                }
+                  
                 .container p {
                     margin: 15px 0;
                     font-size: 14px;
