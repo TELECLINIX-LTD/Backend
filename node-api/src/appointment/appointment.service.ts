@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EmailService } from 'src/email/email.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
@@ -92,19 +88,27 @@ export class AppointmentService {
     };
   }
 
-  async acceptAppointment(
-    appointmentId: string,
-    doctorId: string,
-  ): Promise<any> {
-    const doctor = await this.db.user?.findUnique({
-      where: { id: doctorId },
+  async acceptAppointment(appointmentId: string, userId: string): Promise<any> {
+    const doctor = await this.db.doctor?.findUnique({
+      where: { userId: userId },
     });
+
+    if (!doctor) {
+      throw new NotFoundException('Doctor not found');
+    }
+    const doctorId = doctor.id;
+
     const appointment = await this.db.appointment.findUnique({
       where: { id: appointmentId },
       include: {
         patient: {
           include: {
             user: { select: { fullName: true, email: true } },
+          },
+        },
+        doctor: {
+          include: {
+            user: { select: { fullName: true } },
           },
         },
       },
@@ -114,7 +118,7 @@ export class AppointmentService {
       throw new NotFoundException('Appointment not found');
     }
 
-    await this.db.appointment.update({
+    await this.db.appointment?.update({
       where: { id: appointmentId },
       data: {
         doctorId: doctorId,
@@ -122,7 +126,7 @@ export class AppointmentService {
       },
     });
 
-    const { fullName } = doctor;
+    const doctorsName = appointment.doctor?.user?.fullName;
     const patientName = appointment.patient?.user?.fullName;
     const patientEmail = appointment.patient?.user?.email;
     const appointmentTime = new Date(appointment.appointmentTime);
@@ -136,7 +140,7 @@ export class AppointmentService {
     }).format(appointmentTime);
 
     await this.emailService.sendAppointmentAccepted(
-      fullName,
+      doctorsName,
       patientName,
       patientEmail,
       formattedDate,

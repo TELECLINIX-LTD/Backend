@@ -53,16 +53,17 @@ export class EmailService {
   async sendEmail(emailInput: EmailInput): Promise<void> {
     const { to, subject, body, cc, bcc } = emailInput;
     const senderEmail = this.emailConfig.getEmailCredentials().auth.user;
-    try {
-      const mailOptions = {
-        from: `"Notification" <${senderEmail}>`,
-        to,
-        subject,
-        html: body,
-        cc,
-        bcc,
-      };
 
+    const mailOptions = {
+      from: `"Notification" <${senderEmail}>`,
+      to,
+      subject,
+      html: body,
+      cc,
+      bcc,
+    };
+
+    try {
       this.logger.debug('Attempting to send email:', {
         to,
         subject,
@@ -70,8 +71,8 @@ export class EmailService {
         hasBCC: !!bcc,
       });
 
-      const result = await this.transporter.sendMail(mailOptions);
-      this.logger.log('Email sent successfully:', result);
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log('Email sent successfully:');
     } catch (error) {
       this.logger.error('Email sending failed:', {
         error: error.message,
@@ -82,21 +83,126 @@ export class EmailService {
     }
   }
 
+  private generateHtmlBody(content: string): any {
+    const backgroundImage =
+      'https://img.freepik.com/free-vector/elegant-white-wallpaper-with-golden-details_23-2149095007.jpg?semt=ais_hybrid';
+
+    return `
+      <!DOCTYPE html>
+              
+        <html>
+        <head>
+            <title>Your Health, Anytime, Anywhere</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    background: url(${backgroundImage}) no-repeat center center fixed;
+                    background-size: cover;
+                    color: black;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    flex-direction: column;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    border-radius: 5px;
+                }
+                h1 {
+                    color: white;
+                    background-color: rgb(7, 9, 12);
+                    text-align: center;
+                    font-size: 36px;
+                    padding: 60px 0;
+                    margin: 0;
+                }
+                .container p {
+                    margin: 15px 0;
+                    font-size: 14px;
+                    line-height: 1.6;
+                }
+                a {
+                    color: #007bff;
+                    text-decoration: none;
+                }
+                .footer {
+                    text-align: center;
+                    margin-top: 20px;
+                      font-size: 8px;
+                      color: white;
+                      background-color: rgb(7, 9, 12);
+                      padding: 20px 10px;
+                }
+                .footer h2 {
+                    margin: 0;
+                    padding-bottom: 20px;
+                    font-size: 12px;
+                }
+                .footer .footer-content {
+                    font-size: 8px;
+                    text-align: left;
+                    max-width: 200px;
+                }
+                .footer-bottom {
+                    display: flex;
+                    justify-content: space-between;
+                    padding-top: 10px;
+                    font-size: 6px;
+                    margin-top: 15px;
+                    color: #007bff;
+
+                }
+
+                .footer-bottom p{
+                  font-size: 6px;
+                }    
+          
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>TELECLINIX</h1>
+                ${content}
+                <p>Warm regards,</p>
+                <p>Info@teleclinix.com</p>
+                <div class="footer">
+                    <div class="footer-content">
+                        <h2>TELECLINIX</h2>
+                      Teleclinix is an online platform that allows users to book doctor appointments easily and conveniently. It provides a seamless experience for scheduling consultations, making healthcare accessible from the comfort of home. With Teleclinix, patients can manage their health appointments efficiently, promoting a healthier, more connected community.
+                    </div>
+                    <div class="footer-bottom">
+                        &copy; Copyright Teleclinix. All Rights Reserved.                        
+                    </div>                    
+                </div>
+            </div>
+        </body>
+        </html>
+
+    `;
+  }
+
   /**
    * Send an email verification message with a token.
    * @param email - Recipient email address.
    * @param emailToken - Token for email verification.
    */
-
   async sendEmailVerification(
     email: string,
     emailToken: string,
   ): Promise<void> {
     const subject = 'Email Verification';
-    const body = `Please use the following verification code to complete your registration: ${emailToken}`;
+    const content = `
+        <p>Please use the following verification code to complete your registration:</p>
+        <h2>${emailToken}</h2>`;
+    const body = this.generateHtmlBody(content);
 
     await this.sendEmail({
-      to: email,
+      to: [email],
       subject,
       body,
     });
@@ -114,44 +220,35 @@ export class EmailService {
     formattedDate: string,
   ): Promise<void> {
     const subject = 'Appointment Confirmation';
-
-    const body = `Dear ${fullName},\n\nWe are pleased to inform you that your appointment has been scheduled for ${formattedDate}. Please note that the appointment is currently pending confirmation from the doctor. \n\nWe will notify you promptly once the doctor has confirmed. If you have any questions or need further assistance, please feel free to reach out to us.\n\nThank you for choosing our services. Wishing you good health and well-being.\n\nBest regards,\nTeleclinix Team`;
+    const content = `
+      <p>Dear ${fullName},</p>
+      <p>We are pleased to inform you that your appointment has been scheduled for ${formattedDate}. Please note that the appointment is currently pending confirmation from the doctor.</p>
+      <p>We will notify you promptly once the doctor has confirmed. If you have any questions or need further assistance, please feel free to reach out to us.</p>
+      <p>Thank you for choosing our services. Wishing you good health and well-being.</p>
+      <p>Best regards,</p>
+      <p>Teleclinix Team</p>
+    `;
+    const htmlBody = this.generateHtmlBody(content);
 
     await this.sendEmail({
-      to: email,
+      to: [email],
       subject,
-      body,
+      body: htmlBody,
     });
   }
 
-  private generateHtmlBody(fullName: string, token: string): any {
-    return `
-    <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          h1{
-          text-align: center;          
-          }
-          .reset-button {
-            display: inline-block;
-            padding: 1rem;
-            border-radius: 8px;
-            font-size: 16px;
-            color: #ffffff !important;
-            background-color: #2467E3;
-            text-decoration: none;
-            border: none;
-            border-radius: 5px;
-            font-weight: 500;
-            font-size: 1rem;
-            text-align: center;
-          } 
-
-        </style>
-      </head>
-      <body>
-        <h1><b>TELECLINIX</b></h1>
+  /**
+   * Send an appointment confirmation email.
+   * @param email - Recipient email address.
+   * @param fullName - Full name of the recipient.
+   * @param formattedDate - Formatted appointment date.
+   */
+  async sendResetPasswordLink(
+    emailPasswordDto: EmailPasswordDto,
+  ): Promise<void> {
+    const { fullName, email, token } = emailPasswordDto;
+    const subject = 'Reset Password';
+    const content = `
         <p>Hello ${fullName},</p>
         <h2>Reset your password</h2>
         <p>We received a request to reset the password to your Teleclinix account. You can reset it by clicking on the button below. Please note this link will expire after 24 hours.</p>
@@ -159,25 +256,13 @@ export class EmailService {
           <a href="https://teleclinix-react.vercel.app/reset-password?token=${token}" class="reset-button">
           Reset Password
           </a>
-        </div>
-        <p>If you didn’t initiate this request, please send us an email at <a href="mailto:support@teleclinix.com">support@teleclinix.co</a> so we can immediately look into this.</p>
-        <p>Best regards,<br>Team Teleclinix</p>
-      </body>
-      </html>
-
-    `;
-  }
-  async sendResetPasswordLink(
-    emailPasswordDto: EmailPasswordDto,
-  ): Promise<void> {
-    const { email, resetPasswordLink, fullName } = emailPasswordDto;
-    const subject = 'Reset Password';
-    const body = this.generateHtmlBody(fullName, resetPasswordLink);
+        </div>`;
+    const htmlBody = this.generateHtmlBody(content);
 
     await this.sendEmail({
-      to: email,
+      to: [email],
       subject,
-      body,
+      body: htmlBody,
     });
   }
 
@@ -188,10 +273,17 @@ export class EmailService {
     formattedDate: string,
   ): Promise<void> {
     const subject = 'Appointment Accepted';
-    const body = `Dear ${patientName},\n\nWe are pleased to inform you that your appointment has been confirmed for ${formattedDate}. Dr. ${doctorsName} will be attending to you and is looking forward to providing you with the best care possible.\n\nIf you have any questions or need to reschedule, please feel free to contact us at your earliest convenience.\n\nThank you for choosing our services. Wishing you good health and a speedy recovery.\n\nBest regards,\n[Your Clinic Name] Team`;
+
+    const content = `
+    <p>Dear ${patientName},</p>
+    <p>We are pleased to inform you that your appointment has been confirmed for ${formattedDate}. Dr. ${doctorsName} will be attending to you and is looking forward to providing you with the best care possible.</p>
+    <p>If you have any questions or need to reschedule, please feel free to contact us at your earliest convenience.</p>
+    <p>Thank you for choosing our services. Wishing you good health and a speedy recovery.</p>
+  `;
+    const body = this.generateHtmlBody(content);
 
     await this.sendEmail({
-      to: email,
+      to: [email],
       subject,
       body,
     });

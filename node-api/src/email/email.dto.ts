@@ -1,11 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsEmail, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class EmailInput {
-  @ApiProperty()
-  @IsString()
-  @IsEmail()
-  to: string;
+  @ApiProperty({
+    description:
+      'Recipient(s) of the email. Can be a single email string or an array of emails.',
+    oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+  })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @IsArray()
+  @IsEmail({}, { each: true })
+  to: string[];
 
   @ApiProperty()
   @IsString()
@@ -40,7 +46,7 @@ export class EmailPasswordDto {
 
   @ApiProperty()
   @IsString()
-  resetPasswordLink: string;
+  token: string;
 }
 
 export class EmailOutput {

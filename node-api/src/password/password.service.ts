@@ -32,13 +32,12 @@ export class PasswordService {
     }
     const payload = { id: user.id };
     const token = this.jwtService.sign(payload);
-    console.log('token', token);
-    const resetPasswordLink = `${process.env.CLIENT_URL}/auth/reset-password?token=${token}`;
     const emailPasswordDto = {
       email: user.email,
       fullName: user.fullName,
-      resetPasswordLink,
+      token,
     };
+
     await this.emailService.sendResetPasswordLink(emailPasswordDto);
 
     return { message: 'Reset password link sent successfully' };
