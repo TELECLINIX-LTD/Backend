@@ -25,9 +25,8 @@ export class SessionService {
     const { sort, limit, page, sortBy } = querySessionDto;
     const skip = (page - 1) * limit;
 
-
     //Generate a Redis cache key
-    const cacheKey = `sessions:user:${userId}:page:${page}:limit:${limit}:sort:${sort}:sortBy:${sortBy}`;
+    const cacheKey = `userSession:user:${userId}:page:${page}:limit:${limit}:sort:${sort}:sortBy:${sortBy}`;
 
     //check if the cache exists
     const cachedData = await this.redisService.get(cacheKey);
@@ -67,7 +66,7 @@ export class SessionService {
     };
 
     //set cache
-    await this.redisService.set(cacheKey, JSON.stringify(response), 172800);
+    await this.redisService.set(cacheKey, JSON.stringify(response), 43200);
 
     return response;
   }
