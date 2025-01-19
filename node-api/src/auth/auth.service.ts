@@ -13,6 +13,7 @@ import { LoginInputDto } from './dtos/login-input.dto';
 import { SystemMessages } from 'src/common/constants/system.messages';
 import { SessionDto } from 'src/session/dtos/session.dto';
 import { SessionService } from 'src/session/session.service';
+import { omit } from 'lodash';
 
 @Injectable()
 export class AuthService {
@@ -103,6 +104,7 @@ export class AuthService {
       data: {
         email: email,
         password: hashedPassword,
+        gender: gender,
         fullName: `${firstName} ${lastName}`,
         phoneNumber: phoneNumber,
         role: 'DOCTOR',
@@ -170,8 +172,9 @@ export class AuthService {
     };
 
     await this.sessionService.logSession(logSessionDto);
-    const { password, ...userWithoutPassword } = user;
+    const userWithoutPassword = omit(user, 'password');
 
-    return { token, user: userWithoutPassword };
+    const userData = { token, user: userWithoutPassword };
+    return userData;
   }
 }

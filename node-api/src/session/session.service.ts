@@ -25,6 +25,7 @@ export class SessionService {
     const { sort, limit, page, sortBy } = querySessionDto;
     const skip = (page - 1) * limit;
 
+
     //Generate a Redis cache key
     const cacheKey = `sessions:user:${userId}:page:${page}:limit:${limit}:sort:${sort}:sortBy:${sortBy}`;
 
@@ -37,11 +38,9 @@ export class SessionService {
 
     const take = limit || 8;
 
-    const order = sort === 'desc' ? -1 : 1;
-
     const sessions = await this.db.session.findMany({
       where: { userId },
-      orderBy: { [sortBy]: order },
+      orderBy: { [sortBy]: sort },
       skip,
       take,
     });

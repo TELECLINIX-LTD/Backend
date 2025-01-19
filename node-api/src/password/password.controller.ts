@@ -51,7 +51,6 @@ export class PasswordController {
     @Body() resetPasswordDto: ResetPasswordDto,
     @Query('token') token?: string,
   ) {
-    console.log('token coming in', token);
     const result = await this.passwordService.resetPassword(
       resetPasswordDto,
       token,

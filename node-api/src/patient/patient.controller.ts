@@ -52,7 +52,7 @@ export class PatientController {
   }
 
   @Get()
-  @Roles(Role.PATIENT)
+  @Roles(Role.PATIENT, Role.DOCTOR)
   @ApiOperation({
     summary: 'Fetch all verified patients',
     description:
