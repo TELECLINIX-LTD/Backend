@@ -1,48 +1,22 @@
-from fastapi import WebSocket, WebSocketDisconnect, Depends, HTTPException, APIRouter
-from core.authentication import verify_access_token as verify_token
+# from fastapi import Depends, APIRouter
+# from sqlalchemy.orm import Session
+# from models.model import Message
+# from database.database import get_db
+
+# chat_router = APIRouter()
+
+# @chat_router.post("/api/messages")
+# async def save_message(sender_id: int, recipient_id: int, message: str, db: Session = Depends(get_db)):
+#     db_message = Message(sender_id=sender_id, recipient_id=recipient_id, message = message)
+#     db.add(db_message)
+#     db.commit()
+#     db.refresh(db_message)
+#     return db_message
 
 
-websocket_router = APIRouter()
-
-
-
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: dict[str, WebSocket] = {}
-
-    async def connect(self, websocket: WebSocket, user_id: str):
-        await websocket.accept()
-        self.active_connections[user_id] = websocket
-
-    def disconnect(self, user_id: str):
-        if user_id in self.active_connections:
-            del self.active_connections[user_id]
-
-    async def send_personal_message(self, message:str, user_id:str):
-        websocket = self.active_connections.get(user_id)
-        if websocket:
-            await websocket.send_text(message)
-
-    async def broadcast(self, message:str):
-        for connection in self.active_connections.values():
-            await connection.send_text(message)
-
-connection_manager = ConnectionManager()
-
-@websocket_router.websocket("/ws/chat")
-async def chat_websocket(websocket: WebSocket, token:str):
-    payload = verify_token(token)
-    user_id = payload.get('user_id')
-
-    if not user_id:
-        await websocket.close()
-        return
-    
-    await connection_manager.connect(websocket, user_id)
-
-    try:
-        while True:
-            data = await websocket.receive_text()
-            await connection_manager.broadcast(f"User {user_id}: {data}")
-    except WebSocketDisconnect:
-        connection_manager.disconnect(user_id)
+# @chat_router.get("/api/messages/{user_id}/{peer_id}")
+# async def get_chat_history(user_id: int, peer_id: int, db: Session = Depends(get_db)):
+#     return db.query(Message).filter(
+#         ((Message.sender_id == user_id) & (Message.recipient_id == peer_id)) |
+#         ((Message.sender_id == peer_id) & (Message.recipient_id == user_id))
+#         ).order_by(Message.timestamp).all()

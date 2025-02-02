@@ -73,7 +73,7 @@ class Consultation(Base):
     id = Column(Integer, primary_key=True, index=True)
     doctor_id = Column(Integer, ForeignKey('doctors.id'))
     patient_id = Column(Integer, ForeignKey('patients.id'))
-    scheduled_time = Column(DateTime, default=datetime.utcnow)
+    scheduled_time = Column(DateTime, default=datetime.now)
     status = Column(Enum(ConsultationStatus), default=ConsultationStatus.PENDING)
     notes = Column(Text)
     
@@ -98,7 +98,7 @@ class Message(Base):
     __tablename__ = 'messages'
     
     id = Column(Integer, primary_key=True, index=True)
-    sender_id = Column(Integer, index=True)
-    recipient_id = Column(Integer, index=True)
+    sender_id = Column(Integer, ForeignKey('users.id'))
+    recipient_id = Column(Integer, ForeignKey('users.id'), nullable=True)
     message = Column(Text)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.now)

@@ -11,7 +11,7 @@ from models import model
 import services.auth_service as auth_service
 from core.security import verify_password
 
-from fastapi.security import OAuth2PasswordBearer, OAuth2
+from fastapi.security import HTTPBearer, OAuth2
 from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
 from fastapi.openapi.models import OAuthFlowPassword
 
