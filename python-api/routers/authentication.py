@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-import schemas.user_schema
+import schemas.user_schema as user_schema
 from services import auth_service
 from database.database import get_db
-from core.authentication import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_current_active_user
+from core.authentication import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, get_current_user
 from core.security import get_password_hash
 from datetime import timedelta
 from models import model
@@ -23,7 +22,7 @@ auth_router = APIRouter(
 
 @auth_router.post("/register/", status_code=status.HTTP_201_CREATED, description="Create new user")
 
-async def signup(user: schemas.user_schema.UserCreate, db: Session = Depends(get_db)):
+async def signup(user: user_schema.UserCreate, db: Session = Depends(get_db)):
     db_user = auth_service.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
@@ -31,10 +30,10 @@ async def signup(user: schemas.user_schema.UserCreate, db: Session = Depends(get
     hashed_password = get_password_hash(user.password)
     return auth_service.create_user(db=db, user=user, password=hashed_password)
 
-@auth_router.post("/login/", description="Authenticate user with email and password. Returns an access token upon successful login.")
-async def login(form_data: OAuth2PasswordRequestForm = Depends(),  db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == form_data.username).first()
-    if not user or not user.verify_password(form_data.password):
+@auth_router.post("/token/", description="Authenticate user with email and password. Returns an access token upon successful login.")
+async def login_for_access_token(form_data: user_schema.FormData = Depends(),  db: Session = Depends(get_db)):
+    user = authenticate_user(db, form_data.email, form_data.password)
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -58,7 +57,7 @@ def get_logged_in_users(db: Session = Depends(get_db)):
 
 
 @auth_router.post("/logout/")
-def logout(current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+def logout(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     current_user.is_logged_in = False
     db.add(current_user)
     db.commit()

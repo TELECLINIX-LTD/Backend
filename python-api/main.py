@@ -1,17 +1,16 @@
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-import json
-from starlette.middleware.sessions import SessionMiddleware 
-from database.database import engine, Base, db_session
-from models.model import Message  # Import the Message model
-
-from routers import authentication, doctors_auth, google_auth
-from core.chat_manager import WebSocketManager
-#from core.chat_authentication import verify_token
-
 import logging
+
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
+
+from core.chat_manager import WebSocketManager
+from database.database import engine, Base
+from routers import authentication, doctors_auth, google_auth
+
+# from core.chat_authentication import verify_token
 
 #NODEJS_AUTH_SERVICE_URL = 'https://backend-a25w.onrender.com/api/auth/verify-token'  # Replace with your actual Node.js auth service URL
 
@@ -64,15 +63,17 @@ except Exception as e:
     logger.error(f"Failed to create database: {e}")
 
 # Include routers
-app.include_router(router = authentication.auth_router, tags=["JWT Authentication"])
-app.include_router(router = google_auth.app, tags=["Google Authentication"])
-app.include_router(router = doctors_auth.doc_router, tags=["Doctors"])
+app.include_router(router=authentication.auth_router, tags=["JWT Authentication"])
+app.include_router(router=google_auth.app, tags=["Google Authentication"])
+app.include_router(router=doctors_auth.doc_router, tags=["Doctors"])
 
 chat_manager = WebSocketManager()
+
 
 @app.get("/", tags=["Home"])
 async def root():
     return {"message": "Welcome to TeleClinix API Documentation, Navigate to /docs to view documentation."}
+
 
 @app.get("/chat", response_class=HTMLResponse)
 async def chat(request: Request):

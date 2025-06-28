@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, HTMLResponse
+
 # from models.model import User
 # from sqlalchemy.orm import Session
 # from database.database import get_db
@@ -41,7 +42,7 @@ templates = Jinja2Templates(directory="templates")
 #         self,
 #         tokenUrl: str,
 #         scheme_name: Optional[str] = None,
-        
+
 #     ):
 #         if not tokenUrl:
 #             raise ValueError("`tokenUrl` must be provided")
@@ -64,7 +65,7 @@ templates = Jinja2Templates(directory="templates")
 #                 headers={"WWW-Authenticate": "Bearer"},
 #             )
 #         return param
-    
+
 # oauth2_scheme = OAuth2PasswordBearerWithEmail(tokenUrl="/api/login")
 
 # 
@@ -109,6 +110,7 @@ GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USER_INFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
+
 def get_google_auth_url():
     return (
         f"{GOOGLE_AUTH_URL}?response_type=code"
@@ -116,6 +118,7 @@ def get_google_auth_url():
         f"&redirect_uri={REDIRECT_URI}"
         f"&scope=email profile"
     )
+
 
 async def get_google_token(code: str):
     async with AsyncClient() as client:
@@ -131,7 +134,7 @@ async def get_google_token(code: str):
         )
         response.raise_for_status()
         return response.json()
-    
+
 
 async def get_user_info(access_token: str):
     async with AsyncClient() as client:
@@ -141,7 +144,7 @@ async def get_user_info(access_token: str):
         )
         response.raise_for_status()
         return response.json()
-    
+
 
 @app.get("/auth/google", response_class=HTMLResponse)
 async def google_login(request: Request):
@@ -153,6 +156,7 @@ async def google_login(request: Request):
             "title": "Google Login"
         }
     )
+
 
 @app.get("/auth/google/callback")
 async def google_callback(code: str):

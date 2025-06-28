@@ -1,11 +1,10 @@
 # Description: This file contains the database models for the application.
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Enum, ForeignKey
-from database.database import Base
-from core.security import get_password_hash, verify_password
+from ..database.database import Base
+from ..core.security import get_password_hash, verify_password
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
-
 
 
 class UserRole(enum.Enum):
@@ -28,19 +27,17 @@ class User(Base):
     def verify_password(self, password: str) -> bool:
         return verify_password(password, self.password)
 
-
     doctor_profile = relationship("Doctor", back_populates="user", uselist=False)
     patient_profile = relationship("Patient", back_populates="user", uselist=False)
 
 
-
 class Patient(Base):
     __tablename__ = 'patients'
-    
+
     id = Column(Integer, ForeignKey('users.id'), primary_key=True)
     age = Column(Integer)
     medical_history = Column(Text)
-    
+
     # Relationships
     user = relationship("User", back_populates="patient_profile")
     consultations = relationship("Consultation", back_populates="patient")
@@ -48,7 +45,7 @@ class Patient(Base):
 
 class Doctor(Base):
     __tablename__ = 'doctors'
-    
+
     id = Column(Integer, ForeignKey('users.id'), primary_key=True)
     fullname = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False)
@@ -57,46 +54,50 @@ class Doctor(Base):
     medical_license_number = Column(String(255), nullable=False)
     specialization = Column(String, nullable=False)
     experience_years = Column(Integer)
-    
+
     # Relationships
     user = relationship("User", back_populates="doctor_profile")
     consultations = relationship("Consultation", back_populates="doctor")
+
 
 class ConsultationStatus(enum.Enum):
     PENDING = "pending"
     COMPLETED = "completed"
     CANCELED = "canceled"
 
+
 class Consultation(Base):
     __tablename__ = 'consultations'
-    
+
     id = Column(Integer, primary_key=True, index=True)
     doctor_id = Column(Integer, ForeignKey('doctors.id'))
     patient_id = Column(Integer, ForeignKey('patients.id'))
     scheduled_time = Column(DateTime, default=datetime.now)
     status = Column(Enum(ConsultationStatus), default=ConsultationStatus.PENDING)
     notes = Column(Text)
-    
+
     # Relationships
     doctor = relationship("Doctor", back_populates="consultations")
     patient = relationship("Patient", back_populates="consultations")
     prescriptions = relationship("Prescription", back_populates="consultation")
 
+
 class Prescription(Base):
     __tablename__ = 'prescriptions'
-    
+
     id = Column(Integer, primary_key=True, index=True)
     consultation_id = Column(Integer, ForeignKey('consultations.id'))
     medication = Column(String, nullable=False)
     dosage = Column(String, nullable=False)
     instructions = Column(Text)
-    
+
     # Relationships
     consultation = relationship("Consultation", back_populates="prescriptions")
 
+
 class Message(Base):
     __tablename__ = 'messages'
-    
+
     id = Column(Integer, primary_key=True, index=True)
     sender_id = Column(Integer, ForeignKey('users.id'))
     recipient_id = Column(Integer, ForeignKey('users.id'), nullable=True)

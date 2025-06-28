@@ -1,6 +1,13 @@
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
+class FormData(BaseModel):
+    email: str
+    password: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -26,5 +33,5 @@ class Token(BaseModel):
     refresh_token: str
 
 class TokenPayload(BaseModel):
-    email: int
+    email: str | None = None
 
