@@ -42,6 +42,7 @@ origins = [
     "http://localhost",
     "http://localhost:8080",
     "http://localhost:8000",
+    "http://127.0.0.1:8000",
     "http://localhost:5173",
     "https://teleclinix-backend-api.onrender.com"
 ]
@@ -58,7 +59,7 @@ app.add_middleware(
 
 try:
     Base.metadata.create_all(bind=engine)
-    logger.info("Database has been created successfully")
+    logger.info("Database was created successfully")
 except Exception as e:
     logger.error(f"Failed to create database: {e}")
 
