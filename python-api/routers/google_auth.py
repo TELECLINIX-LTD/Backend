@@ -1,6 +1,10 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, HTMLResponse
+
+from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel, OAuthFlowAuthorizationCode
+from fastapi.security import OAuth2
+import httpx
 
 # from models.model import User
 # from sqlalchemy.orm import Session
@@ -22,7 +26,7 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 # from core.configuration import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, ALGORITHM
 
 app = APIRouter(
-    prefix="/api",
+    prefix="/api/auth",
     tags=["Google Authentication"]
 )
 
@@ -104,20 +108,37 @@ load_dotenv()
 
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USER_INFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
+
+SCOPES = "openid email profile"
+
+# Define the OAuth2 flow for Google authentication
+class GoogleOAuth2(OAuth2):
+    def __init__(self):
+        flows = OAuthFlowsModel(
+            authorizationCode=OAuthFlowAuthorizationCode(
+                authorizationUrl=GOOGLE_AUTH_URL,
+                tokenUrl=GOOGLE_TOKEN_URL,
+                scopes={"openid": "Access user info"}
+            )
+        )
+        super().__init__(flows=flows)
+
+oauth2_scheme = GoogleOAuth2()
 
 
 def get_google_auth_url():
     return (
         f"{GOOGLE_AUTH_URL}?response_type=code"
         f"&client_id={GOOGLE_CLIENT_ID}"
-        f"&redirect_uri={REDIRECT_URI}"
+        f"&redirect_uri={GOOGLE_REDIRECT_URI}"
         f"&scope=email profile"
     )
+
 
 
 async def get_google_token(code: str):
@@ -128,7 +149,7 @@ async def get_google_token(code: str):
                 "code": code,
                 "client_id": GOOGLE_CLIENT_ID,
                 "client_secret": GOOGLE_CLIENT_SECRET,
-                "redirect_uri": REDIRECT_URI,
+                "redirect_uri": GOOGLE_REDIRECT_URI,
                 "grant_type": "authorization_code"
             },
         )
@@ -146,39 +167,54 @@ async def get_user_info(access_token: str):
         return response.json()
 
 
-@app.get("/auth/google", response_class=HTMLResponse)
-async def google_login(request: Request):
-    google_auth_url = get_google_auth_url()
-    return templates.TemplateResponse(
-        "index.html", {
-            "request": request,
-            "google_auth_url": google_auth_url,
-            "title": "Google Login"
-        }
+@app.get("/google/login")
+async def login_with_google():
+    # Redirect to Google's OAuth 2.0 server
+    return RedirectResponse(
+        f"{GOOGLE_AUTH_URL}?response_type=code&client_id={GOOGLE_CLIENT_ID}"
+        f"&redirect_uri={GOOGLE_REDIRECT_URI}&scope={SCOPES}&access_type=offline"
     )
 
 
-@app.get("/auth/google/callback")
+@app.get("/google/callback")
 async def google_callback(code: str):
-    try:
-        token_data = await get_google_token(code)
-        user_info = await get_user_info(token_data["access_token"])
-        return {
-            "message": "Authentication successful!",
-            "user_info": user_info
+    # Exchange code for tokens
+    async with httpx.AsyncClient() as client:
+        token_response = await client.post(
+            GOOGLE_TOKEN_URL,
+            data={
+                "code": code,
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "redirect_uri": GOOGLE_REDIRECT_URI,
+                "grant_type": "authorization_code",
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+
+        if token_response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to get access token")
+
+        tokens = token_response.json()
+        access_token = tokens["access_token"]
+
+        # Get user info
+        userinfo_response = await client.get(
+            GOOGLE_USER_INFO_URL,
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        if userinfo_response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to fetch user info")
+
+        userinfo = userinfo_response.json()
+
+    # You can now log in the user or create a new one
+    return {
+        "access_token": access_token,
+        "user": {
+            "email": userinfo.get("email"),
+            "name": userinfo.get("name"),
+            "picture": userinfo.get("picture"),
         }
-    except Exception as e:
-        return {
-            "error": str(e)
-        }
-    # token = await oauth.google.authorize_access_token(request)
-    # user_info = token.get("userinfo")
-    # if user_info:
-    #     # Check if user exists in database
-    #     user = db.query(User).filter(User.email == user_info["email"]).first()
-    #     if not user:
-    #         user = User(email=user_info["email"], name=user_info["name"])
-    #         db.add(user)
-    #         db.commit()
-    #     return {"message": "Login successful", "user": {"email": user.email, "name": user.name}}
-    # return {"error": "Google authentication failed"}
+    }

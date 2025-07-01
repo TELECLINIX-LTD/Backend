@@ -58,7 +58,7 @@ app.add_middleware(
 
 try:
     Base.metadata.create_all(bind=engine)
-    logger.info("Database created successfully")
+    logger.info("Database has been created successfully")
 except Exception as e:
     logger.error(f"Failed to create database: {e}")
 
@@ -72,6 +72,7 @@ chat_manager = WebSocketManager()
 
 @app.get("/", tags=["Home"])
 async def root():
+    logger.info("Welcome to TeleClinix API Documentation")
     return {"message": "Welcome to TeleClinix API Documentation, Navigate to /docs to view documentation."}
 
 

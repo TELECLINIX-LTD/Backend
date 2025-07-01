@@ -20,9 +20,12 @@ def get_user_by_email(db: Session, email: str):
 def create_user(db: Session, user: schemas.user_schema.UserCreate, password: str):
     
     db_user = model.User(
+        first_name = user.first_name,
+        last_name = user.last_name,
+        gender=user.gender,
         email=user.email,
         password=password
-    )
+    )   
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

@@ -1,4 +1,5 @@
 
+from enum import Enum
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 class FormData(BaseModel):
@@ -7,10 +8,16 @@ class FormData(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
+class GenderEnum(str, Enum):
+    male = "male"
+    female = "female"
+    prefer_not_to_say = "prefer_not_to_say"
 
 class UserCreate(BaseModel):
+    first_name: str
+    last_name: str
     email: EmailStr
+    gender: GenderEnum
     password: str
     confirm_password: str
 

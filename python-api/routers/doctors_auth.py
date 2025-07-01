@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from ..services import doctors_service
-from ..schemas import doctor_schema
-from ..database.database import get_db
+from services import doctors_service
+from schemas import doctor_schema
+from database.database import get_db
 
 doc_router = APIRouter(prefix="/doctors")
 

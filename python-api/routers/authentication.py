@@ -26,7 +26,8 @@ async def signup(user: user_schema.UserCreate, db: Session = Depends(get_db)):
     db_user = auth_service.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
-    
+    if user.password != user.confirm_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Passwords do not match")
     hashed_password = get_password_hash(user.password)
     return auth_service.create_user(db=db, user=user, password=hashed_password)
 
@@ -56,12 +57,12 @@ def get_logged_in_users(db: Session = Depends(get_db)):
     return [{"id": user.id, "email": user.email} for user in logged_in_users]
 
 
-@auth_router.post("/logout/")
-def logout(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    current_user.is_logged_in = False
-    db.add(current_user)
-    db.commit()
-    return {"message": f"User {current_user.email} logged out successfully"}
+# @auth_router.post("/logout/")
+# def logout(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+#     current_user.is_logged_in = False
+#     db.add(current_user)
+#     db.commit()
+#     return {"message": f"User {current_user.email} logged out successfully"}
 
 
 @auth_router.get("/users/")

@@ -1,7 +1,7 @@
 # Description: This file contains the database models for the application.
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Enum, ForeignKey
-from ..database.database import Base
-from ..core.security import get_password_hash, verify_password
+from database.database import Base
+from core.security import get_password_hash, verify_password
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -16,6 +16,9 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String(255), nullable=False)
+    last_name = Column(String(255), nullable=False)
+    gender = Column(String(50), nullable=True)
     email = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
