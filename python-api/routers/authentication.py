@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 import schemas.user_schema as user_schema
 from services import auth_service
@@ -7,8 +7,12 @@ from core.authentication import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from core.security import get_password_hash
 from datetime import timedelta
 from models import model
+from utility.email_utils import send_email
+import random, string, time
 
 from models.model import User
+
+otp_store = {}  # In-memory store for OTPs, consider using a more persistent store in production
 
 auth_router = APIRouter(
     prefix="/api",
@@ -20,17 +24,32 @@ auth_router = APIRouter(
     }
 )
 
-@auth_router.post("/register/", status_code=status.HTTP_201_CREATED, description="Create new user")
+@auth_router.post("/register", status_code=status.HTTP_201_CREATED, description="Create new user")
 
-async def signup(user: user_schema.UserCreate, db: Session = Depends(get_db)):
-    db_user = auth_service.get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
-    if user.password != user.confirm_password:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Passwords do not match")
-    hashed_password = get_password_hash(user.password)
-    return auth_service.create_user(db=db, user=user, password=hashed_password)
+async def signup(user: user_schema.UserCreate, db: Session = Depends(get_db), background_tasks: BackgroundTasks = None):
+    """ Create a new user in the database
+    """
+    # Check if the user already exists
+    existing = db.query(model.User).filter(model.User.email == user.email).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    otp = ''.join(random.choices(string.digits, k=6))
+    otp_store[user.email] = {"otp": otp, "expires": time.time() + 300, "data": user}  # OTP valid for 5 minutes
 
+    background_tasks.add_task(
+        send_email, user.email, 
+        "OTP Verification - Teleclinix", 
+        f"Your OTP is: {otp}. It is valid for 5 minutes."
+        )
+
+    print(f"OTP for {user.email}: {otp}")
+
+    return {"message": "OTP sent to your email. Please verify to complete registration."}
+    
 @auth_router.post("/token/", description="Authenticate user with email and password. Returns an access token upon successful login.")
 async def login_for_access_token(form_data: user_schema.FormData = Depends(),  db: Session = Depends(get_db)):
     user = authenticate_user(db, form_data.email, form_data.password)
@@ -74,4 +93,44 @@ def get_all_users(db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No users found")
     return users
 
+@auth_router.post("/verify-otp/")
+async def verify_otp(user_verify: user_schema.UserVerify, db: Session = Depends(get_db)):
+    """ Verify the OTP sent to the user's email
+    """
+    record = otp_store.get(user_verify.email)
 
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP not found or expired"
+        )
+    
+    if time.time() > record["expires"]:
+        del otp_store[user_verify.email]
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP expired"
+        )
+    
+    if record["otp"] != user_verify.otp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid OTP"
+        )
+    
+    # Create the user in the database
+    user_data = record["data"]
+    new_user = model.User(
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
+        email=user_data.email,
+        gender=user_data.gender,
+        password=get_password_hash(user_data.password), # Hash the password
+        is_logged_in=False  # Default to not logged in
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    del otp_store[user_verify.email]
+    
+    return {"message": "User registered successfully", "user_id": new_user.id}

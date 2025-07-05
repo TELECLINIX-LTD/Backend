@@ -156,3 +156,10 @@ async def websocket_endpoint(websocket: WebSocket):
 #     except Exception as e:
 #         print(f"Error in WebSocket handler: {e}")
 #         await websocket.close(code=1011, reason="Server error")
+
+
+
+# import asyncio
+# from utility.email_utils import send_email
+
+# asyncio.run(send_email("your.email@example.com", "Test Email", "This is a test"))
