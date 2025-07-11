@@ -106,8 +106,6 @@ def get_current_active_user(current_user: model.User = Depends(get_current_user)
 
 
 
-
-
 def decode_access_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])

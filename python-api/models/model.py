@@ -6,6 +6,10 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
 
+class GenderEnum(enum.Enum):
+    male = "male"
+    female = "female"
+    prefer_not_to_say = "prefer_not_to_say"
 
 class UserRole(enum.Enum):
     doctor = "doctor"
@@ -18,11 +22,12 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     first_name = Column(String(255), nullable=False)
     last_name = Column(String(255), nullable=False)
-    gender = Column(String(50), nullable=True)
+    gender = Column(Enum(GenderEnum), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
     is_logged_in = Column(Boolean, default=False)
+    otp = Column(String(6), nullable=True)  # For OTP verification during signup
 
     def set_password(self, password: str):
         self.password = get_password_hash(password)

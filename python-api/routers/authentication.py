@@ -1,14 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 import schemas.user_schema as user_schema
-from services import auth_service
 from database.database import get_db
-from core.authentication import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, get_current_user
-from core.security import get_password_hash
+from core.authentication import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user
+from core.security import get_password_hash, hash_otp, verify_otp
 from datetime import timedelta
 from models import model
-from utility.email_utils import send_email
-import random, string, time
+from utility.email_utils import generate_otp, send_otp_email
+
 
 from models.model import User
 
@@ -24,9 +23,9 @@ auth_router = APIRouter(
     }
 )
 
-@auth_router.post("/register", status_code=status.HTTP_201_CREATED, description="Create new user")
+@auth_router.post("/register", status_code=status.HTTP_201_CREATED, description="Create new user", response_model=user_schema.UserCreate)
 
-async def signup(user: user_schema.UserCreate, db: Session = Depends(get_db), background_tasks: BackgroundTasks = None):
+async def signup(user: user_schema.UserCreate, db: Session = Depends(get_db)):
     """ Create a new user in the database
     """
     # Check if the user already exists
@@ -37,19 +36,85 @@ async def signup(user: user_schema.UserCreate, db: Session = Depends(get_db), ba
             detail="Email already registered"
         )
     
-    otp = ''.join(random.choices(string.digits, k=6))
-    otp_store[user.email] = {"otp": otp, "expires": time.time() + 300, "data": user}  # OTP valid for 5 minutes
-
-    background_tasks.add_task(
-        send_email, user.email, 
-        "OTP Verification - Teleclinix", 
-        f"Your OTP is: {otp}. It is valid for 5 minutes."
+    # Verify password and confirm_password match
+    if user.password != user.confirm_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Passwords do not match"
         )
-
-    print(f"OTP for {user.email}: {otp}")
-
-    return {"message": "OTP sent to your email. Please verify to complete registration."}
     
+    # Generate OTP
+    plain_otp = generate_otp()
+
+    hashed_otp = hash_otp(plain_otp)
+
+    # Hash password
+    hashed_password = get_password_hash(user.password)
+    if not hashed_password:
+        raise HTTPException(status_code=500, detail="Failed to hash password")
+    if not hashed_otp:
+        raise HTTPException(status_code=500, detail="Failed to hash OTP")
+    
+    # Check if OTP already exists for the user
+    existing_otp = db.query(model.User).filter(model.User.email == user.email, model.User.otp.isnot(None)).first()
+    if existing_otp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP already exists for this user"
+        )
+    
+    # Check if email is valid
+    if not user.email or "@" not in user.email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid email address"
+        )
+    
+    # Check if password is valid
+    if len(user.password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 8 characters long"
+        )
+    if not any(char.isdigit() for char in user.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must contain at least one digit"
+        )
+    if not any(char.isalpha() for char in user.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must contain at least one letter"
+        )
+    if not any(char in "!@#$%^&*()-_=+[]{}|;:,.<>?/" for char in user.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must contain at least one special character"
+        )
+    if not user.first_name or not user.last_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="First name and last name are required"
+        )
+    
+    # Create new user with OTP
+    db_user = User(first_name=user.first_name,
+    last_name=user.last_name,
+    email=user.email,
+    gender=user.gender,
+    password=hashed_password,
+    otp=hashed_otp)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+
+    # Send OTP email
+    if not await send_otp_email(user.email, plain_otp):
+        raise HTTPException(status_code=500, detail="Failed to send OTP email")
+
+    return user
+
+
 @auth_router.post("/token/", description="Authenticate user with email and password. Returns an access token upon successful login.")
 async def login_for_access_token(form_data: user_schema.FormData = Depends(),  db: Session = Depends(get_db)):
     user = authenticate_user(db, form_data.email, form_data.password)
@@ -94,43 +159,16 @@ def get_all_users(db: Session = Depends(get_db)):
     return users
 
 @auth_router.post("/verify-otp/")
-async def verify_otp(user_verify: user_schema.UserVerify, db: Session = Depends(get_db)):
-    """ Verify the OTP sent to the user's email
-    """
-    record = otp_store.get(user_verify.email)
-
-    if not record:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="OTP not found or expired"
-        )
+async def verify_otp(otp_request: user_schema.OTPRequest, db: Session = Depends(get_db)):
+    db_user = db.query(model.User).filter(model.User.email == otp_request.email).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
     
-    if time.time() > record["expires"]:
-        del otp_store[user_verify.email]
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="OTP expired"
-        )
+    if not verify_otp(otp_request.otp, db_user.otp):
+        raise HTTPException(status_code=400, detail="Invalid OTP")
     
-    if record["otp"] != user_verify.otp:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid OTP"
-        )
-    
-    # Create the user in the database
-    user_data = record["data"]
-    new_user = model.User(
-        first_name=user_data.first_name,
-        last_name=user_data.last_name,
-        email=user_data.email,
-        gender=user_data.gender,
-        password=get_password_hash(user_data.password), # Hash the password
-        is_logged_in=False  # Default to not logged in
-    )
-    db.add(new_user)
+    # Clear OTP after successful verification
+    db_user.otp = None
     db.commit()
-    db.refresh(new_user)
-    del otp_store[user_verify.email]
     
-    return {"message": "User registered successfully", "user_id": new_user.id}
+    return {"message": "OTP verified successfully"}

@@ -42,6 +42,12 @@ class UserVerify(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class OTPRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+    model_config = ConfigDict(from_attributes=True)
+
 class Token(BaseModel):
     access_token: str
     refresh_token: str
